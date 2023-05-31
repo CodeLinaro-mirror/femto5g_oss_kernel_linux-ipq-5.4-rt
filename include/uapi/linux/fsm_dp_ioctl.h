@@ -156,8 +156,8 @@ struct fsm_dp_aggrhdr {
  * maximum mtu size for FSM DP application, including fsm_dp header
  * Note, need to make sure both sides in sync between NPU, and modem
  */
-#define FSM_DP_MAX_DL_MSG_LEN   ((64 * 1024)  - FSM_DP_MSG_CNTL_BLK)
-#define FSM_DP_MAX_UL_MSG_LEN   ((64 * 1024)  - FSM_DP_MSG_CNTL_BLK)
+#define FSM_DP_MAX_DL_MSG_LEN   ((16 * 1024)  - FSM_DP_MSG_CNTL_BLK)
+#define FSM_DP_MAX_UL_MSG_LEN   ((16 * 1024)  - FSM_DP_MSG_CNTL_BLK)
 
 enum fsm_dp_profile_index {
 	FSM_DP_PROFILE_INDEX_0 = 0,

@@ -3697,6 +3697,13 @@
 		assert-falling-edge;
 		compatible = "tti-gpio";
 		status = "okay";
+    };
+
+	qcom,fsm-dp {
+		compatible = "qcom,fsm-dp";
+		qcom,ul-bufs = <16128 4096>;
+		qcom,rx-queue-size = <1024 1024 1024 1024>;
+		dma-coherent;
 	};
 };
 
