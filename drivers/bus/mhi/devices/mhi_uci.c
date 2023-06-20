@@ -76,6 +76,8 @@ enum MHI_DEBUG_LEVEL msg_lvl = MHI_MSG_LVL_ERROR;
 	if (msg_lvl <= MHI_MSG_LVL_VERBOSE) \
 		pr_err("[D][%s] " fmt, __func__, ##__VA_ARGS__); \
 	} while (0)
+#else
+#define MSG_VERB(fmt, ...)
 #endif
 
 #define MSG_LOG(fmt, ...) do { \

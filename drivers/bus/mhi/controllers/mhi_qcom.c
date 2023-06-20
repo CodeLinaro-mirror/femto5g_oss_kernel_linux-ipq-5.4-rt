@@ -44,6 +44,7 @@ struct firmware_info {
 
 static const struct firmware_info firmware_table[] = {
 	{.dev_id = 0x308, .fw_image = "fsm/xbl.elf"},
+	{.dev_id = 0x305, .fw_image = "fsm/sbl1.mbn"},
 	/* default, set to debug.mbn */
 	{.fw_image = "debug.mbn", .edl_image = "debug.mbn"},
 };
@@ -647,15 +648,12 @@ static void mhi_runtime_put(struct mhi_controller *mhi_cntrl, void *priv)
 	pm_runtime_put_noidle(dev);
 }
 
-typedef bool (*pcie_reset_force_func)(unsigned int);
-pcie_reset_force_func get_pcie_reset_force_func(void);
 static void mhi_status_cb(struct mhi_controller *mhi_cntrl,
 			  void *priv,
 			  enum MHI_CB reason)
 {
 	struct mhi_dev *mhi_dev = priv;
 	struct device *dev = &mhi_dev->pci_dev->dev;
-	pcie_reset_force_func force_pcie_reset;
 	int ret;
 
 	switch (reason) {
@@ -666,23 +664,9 @@ static void mhi_status_cb(struct mhi_controller *mhi_cntrl,
 		break;
 	case MHI_CB_EE_MISSION_MODE:
 
-		/*
-		 * Force PCIe reset to allow re-negotiation of the PCIe link
-		 * with the EP to potentially allow for speed to be bumped up.
-		 */
-		force_pcie_reset = get_pcie_reset_force_func();
-		if (!mhi_cntrl->force_re_enum || force_pcie_reset == NULL)
-			break;
-
 		ret = mhi_force_suspend(mhi_cntrl);
 		if (ret) {
 			MHI_CNTRL_LOG("mhi_force_suspend ret %d\n", ret);
-			break;
-		}
-		mdelay(100);
-
-		if (!((*force_pcie_reset)(mhi_cntrl->domain))) {
-			MHI_CNTRL_ERR("can not force PCIe reset\n");
 			break;
 		}
 		mdelay(100);
@@ -707,7 +691,7 @@ static void mhi_status_cb(struct mhi_controller *mhi_cntrl,
 /* capture host SoC XO time in ticks */
 static u64 mhi_time_get(struct mhi_controller *mhi_cntrl, void *priv)
 {
-	return arch_counter_get_cntvct();
+	return __arch_counter_get_cntvct();
 }
 
 static ssize_t timeout_ms_show(struct device *dev,

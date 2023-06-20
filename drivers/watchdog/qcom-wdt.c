@@ -92,7 +92,7 @@ static void qcom_wdt_bite(struct qcom_wdt *wdt, unsigned int ticks)
 	pr_info("Watchdog bark! Now = %lu.%06lu\n", (unsigned long) t,
 							nanosec_rem / 1000);
 
-#ifdef CONFIG_MHI_BUS
+#if defined(CONFIG_MHI_BUS) && defined(CONFIG_MHI_ENABLE_SSR)
 	if (mhi_wdt_panic_enable)
 		mhi_wdt_panic_handler();
 #endif

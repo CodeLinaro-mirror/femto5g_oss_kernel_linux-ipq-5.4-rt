@@ -567,6 +567,7 @@ map_error:
 
 	return ret;
 }
+EXPORT_SYMBOL_GPL(mhi_queue_skb);
 
 int mhi_gen_n_tre(struct mhi_controller *mhi_cntrl,
 		struct mhi_chan *mhi_chan,
