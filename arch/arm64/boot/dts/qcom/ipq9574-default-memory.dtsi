@@ -125,31 +125,37 @@
 		q6_region: wcnss@4ab00000 {
 			no-map;
 			reg = <0x0 0x4ab00000 0x0 0x02b00000>;
+			status = "disabled";
 		};
 
 		m3_dump: m3_dump@4d600000 {
 			no-map;
 			reg = <0x0 0x4D600000 0x0 0x100000>;
+			status = "disabled";
 		};
 
 		q6_etr_region: q6_etr_dump@1 {
 			no-map;
 			reg = <0x0 0x4D700000 0x0 0x100000>;
+			status = "disabled";
 		};
 
 		q6_caldb_region:q6_caldb_region@4d800000 {
 			no-map;
 			reg = <0x0 0x4D800000 0x0 0x500000>;
+			status = "disabled";
 		};
 
 		qcn9000_pcie0: qcn9000_pcie0@4dd00000 {
 			no-map;
 			reg = <0x0 0x4DD00000 0x0 0x03500000>;
+			status = "disabled";
 		};
 
 		qcn9000_pcie1: qcn9000_pcie1@51200000 {
 			no-map;
 			reg = <0x0 0x51200000 0x0 0x03500000>;
+			status = "disabled";
 		};
 
 #if defined(__CNSS2__)
@@ -157,12 +163,14 @@
 			compatible = "shared-dma-pool";
 			no-map;
 			reg = <0x0 0x54700000 0x0 0x00900000>;
+			status = "disabled";
 		};
 
 		mhi_region1: dma_pool1@55000000 {
 			compatible = "shared-dma-pool";
 			no-map;
 			reg = <0x0 0x55000000 0x0 0x00900000>;
+			status = "disabled";
 		};
 #endif
 

@@ -169,7 +169,7 @@
 
 	qcn9224_legacy_irq0: qcn9224_legacy_irq0 {
 		compatible = "qcom,qcn9224_legacy_irq";
-		status = "ok";
+		status = "disabled";
 		qrtr_node_id = <0x30>;
 		qcn9224_in0: legacy_interrupt {
 			interrupt-controller;
@@ -179,7 +179,7 @@
 
 	qcn9224_legacy_irq1: qcn9224_legacy_irq1 {
 		compatible = "qcom,qcn9224_legacy_irq";
-		status = "ok";
+		status = "disabled";
 		qrtr_node_id = <0x31>;
 		qcn9224_in1: legacy_interrupt {
 			interrupt-controller;
@@ -189,7 +189,7 @@
 
 	qcn9224_legacy_irq2: qcn9224_legacy_irq2 {
 		compatible = "qcom,qcn9224_legacy_irq";
-		status = "ok";
+		status = "disabled";
 		qrtr_node_id = <0x32>;
 		qcn9224_in2: legacy_interrupt {
 			interrupt-controller;
@@ -199,7 +199,7 @@
 
 	qcn9224_legacy_irq3: qcn9224_legacy_irq3 {
 		compatible = "qcom,qcn9224_legacy_irq";
-		status = "ok";
+		status = "disabled";
 		qrtr_node_id = <0x33>;
 		qcn9224_in3: legacy_interrupt {
 			interrupt-controller;
