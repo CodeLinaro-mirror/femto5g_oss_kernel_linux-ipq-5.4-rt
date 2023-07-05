@@ -1177,6 +1177,11 @@ static int parse_xfer_event(struct mhi_controller *mhi_cntrl,
 		struct mhi_buf_info *buf_info;
 		size_t xfer_len;
 
+		if (!is_valid_ring_ptr(tre_ring, ptr)) {
+			MHI_ERR("Event element points outside of the tre ring\n");
+			break;
+		}
+
 		/* Get the TRB this event points to */
 		ev_tre = mhi_to_virtual(tre_ring, ptr);
 
@@ -1376,6 +1381,11 @@ static void mhi_process_cmd_completion(struct mhi_controller *mhi_cntrl,
 	enum mhi_cmd_type type;
 	u32 chan;
 
+	if (!is_valid_ring_ptr(mhi_ring, ptr)) {
+		MHI_ERR("Event element points outside of the cmd ring\n");
+		return;
+	}
+
 	cmd_pkt = mhi_to_virtual(mhi_ring, ptr);
 
 	/* out of order completion received */
@@ -1414,7 +1424,9 @@ int mhi_process_ctrl_ev_ring(struct mhi_controller *mhi_cntrl,
 	struct mhi_ring *ev_ring = &mhi_event->ring;
 	struct mhi_event_ctxt *er_ctxt =
 		&mhi_cntrl->mhi_ctxt->er_ctxt[mhi_event->er_index];
+	struct mhi_chan *mhi_chan;
 	int count = 0;
+	u32 chan;
 
 	/*
 	 * this is a quick check to avoid unnecessary event processing
@@ -1424,6 +1436,11 @@ int mhi_process_ctrl_ev_ring(struct mhi_controller *mhi_cntrl,
 	if (unlikely(MHI_EVENT_ACCESS_INVALID(mhi_cntrl->pm_state))) {
 		MHI_ERR("No EV access, PM_STATE:%s\n",
 			to_mhi_pm_state_str(mhi_cntrl->pm_state));
+		return -EIO;
+	}
+
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring\n");
 		return -EIO;
 	}
 
@@ -1512,6 +1529,23 @@ int mhi_process_ctrl_ev_ring(struct mhi_controller *mhi_cntrl,
 
 			break;
 		}
+		case MHI_PKT_TYPE_TX_EVENT:
+			chan = MHI_TRE_GET_EV_CHID(local_rp);
+
+			WARN_ON(chan >= mhi_cntrl->max_chan);
+
+			/*
+			 * Only process the event ring elements whose channel
+			 * ID is within the maximum supported range.
+			 */
+			if (chan < mhi_cntrl->max_chan) {
+				mhi_chan = &mhi_cntrl->mhi_chan[chan];
+				if (!mhi_chan->configured)
+					break;
+				parse_xfer_event(mhi_cntrl, local_rp, mhi_chan);
+				event_quota--;
+			}
+			break;
 		default:
 			MHI_ERR("Unhandled Event: 0x%x\n", type);
 			break;
@@ -1519,6 +1553,12 @@ int mhi_process_ctrl_ev_ring(struct mhi_controller *mhi_cntrl,
 
 		mhi_recycle_ev_ring_element(mhi_cntrl, ev_ring);
 		local_rp = ev_ring->rp;
+
+		if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+			MHI_ERR("Event ring rp points outside of the event ring\n");
+			return -EIO;
+		}
+
 		dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 		count++;
 	}
@@ -1551,6 +1591,11 @@ int mhi_process_data_event_ring(struct mhi_controller *mhi_cntrl,
 		return -EIO;
 	}
 
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring\n");
+		return -EIO;
+	}
+
 	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 	local_rp = ev_ring->rp;
 
@@ -1561,23 +1606,34 @@ int mhi_process_data_event_ring(struct mhi_controller *mhi_cntrl,
 			local_rp->ptr, local_rp->dword[0], local_rp->dword[1]);
 
 		chan = MHI_TRE_GET_EV_CHID(local_rp);
-		if (chan >= mhi_cntrl->max_chan) {
-			MHI_ERR("invalid channel id %u\n", chan);
-			goto next_er_element;
-		}
-		mhi_chan = &mhi_cntrl->mhi_chan[chan];
 
-		if (likely(type == MHI_PKT_TYPE_TX_EVENT)) {
-			parse_xfer_event(mhi_cntrl, local_rp, mhi_chan);
-			event_quota--;
-		} else if (type == MHI_PKT_TYPE_RSC_TX_EVENT) {
-			parse_rsc_event(mhi_cntrl, local_rp, mhi_chan);
-			event_quota--;
+		WARN_ON(chan >= mhi_cntrl->max_chan);
+
+		/*
+		 * Only process the event ring elements whose channel
+		 * ID is within the maximum supported range.
+		 */
+		if (chan < mhi_cntrl->max_chan &&
+		    mhi_cntrl->mhi_chan[chan].configured) {
+			mhi_chan = &mhi_cntrl->mhi_chan[chan];
+
+			if (likely(type == MHI_PKT_TYPE_TX_EVENT)) {
+				parse_xfer_event(mhi_cntrl, local_rp, mhi_chan);
+				event_quota--;
+			} else if (type == MHI_PKT_TYPE_RSC_TX_EVENT) {
+				parse_rsc_event(mhi_cntrl, local_rp, mhi_chan);
+				event_quota--;
+			}
 		}
 
-next_er_element:
 		mhi_recycle_ev_ring_element(mhi_cntrl, ev_ring);
 		local_rp = ev_ring->rp;
+
+		if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+			MHI_ERR("Event ring rp points outside of the event ring\n");
+			return -EIO;
+		}
+
 		dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 		count++;
 	}
@@ -1606,6 +1662,12 @@ int mhi_process_tsync_ev_ring(struct mhi_controller *mhi_cntrl,
 	int ret = 0;
 
 	spin_lock_bh(&mhi_event->lock);
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring or unalign rp %llx\n",
+				er_ctxt->rp);
+		spin_unlock_bh(&mhi_event->lock);
+		return 0;
+	}
 	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 	if (ev_ring->rp == dev_rp) {
 		spin_unlock_bh(&mhi_event->lock);
@@ -1700,8 +1762,14 @@ int mhi_process_bw_scale_ev_ring(struct mhi_controller *mhi_cntrl,
 	int result, ret = 0;
 
 	spin_lock_bh(&mhi_event->lock);
-	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring or unalign rp %llx\n",
+				er_ctxt->rp);
+		spin_unlock_bh(&mhi_event->lock);
+		return 0;
+	}
 
+	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 	if (ev_ring->rp == dev_rp) {
 		spin_unlock_bh(&mhi_event->lock);
 		goto exit_bw_scale_process;
@@ -1833,7 +1901,14 @@ irqreturn_t mhi_msi_handlr(int irq_number, void *dev)
 	struct mhi_event_ctxt *er_ctxt =
 		&mhi_cntrl->mhi_ctxt->er_ctxt[mhi_event->er_index];
 	struct mhi_ring *ev_ring = &mhi_event->ring;
-	void *dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
+	void *dev_rp;
+
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring\n");
+		return IRQ_HANDLED;
+	}
+
+	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
 
 	/* confirm ER has pending events to process before scheduling work */
 	if (ev_ring->rp == dev_rp)
@@ -2197,7 +2272,13 @@ static void mhi_mark_stale_events(struct mhi_controller *mhi_cntrl,
 
 	/* mark all stale events related to channel as STALE event */
 	spin_lock_irqsave(&mhi_event->lock, flags);
-	dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
+
+	if (!is_valid_ring_ptr(ev_ring, er_ctxt->rp)) {
+		MHI_ERR("Event ring rp points outside of the event ring\n");
+		dev_rp = ev_ring->rp;
+	} else {
+		dev_rp = mhi_to_virtual(ev_ring, er_ctxt->rp);
+	}
 
 	local_rp = ev_ring->rp;
 	while (dev_rp != local_rp) {
