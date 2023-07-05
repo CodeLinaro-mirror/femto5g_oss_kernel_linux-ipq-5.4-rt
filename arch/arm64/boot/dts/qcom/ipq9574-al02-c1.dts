@@ -567,6 +567,7 @@
 			perst-gpio = <&tlmm 32 1>;
 			status = "ok";
 			compliance = <1>;
+			linux,pci-domain = <0>;
 			pcie3_rp: pcie3_rp {
 				reg = <0 0 0 0 0>;
 			};
