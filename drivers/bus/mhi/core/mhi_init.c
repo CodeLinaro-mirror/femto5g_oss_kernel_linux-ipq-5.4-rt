@@ -1457,7 +1457,6 @@ static int of_parse_dt(struct mhi_controller *mhi_cntrl,
 	enum mhi_ee i;
 	u32 *ee;
 	u32 bhie_offset;
-	u32 renegotiation;
 
 	/* parse MHI channel configuration */
 	ret = of_parse_ch_cfg(mhi_cntrl, of_node);
@@ -1512,11 +1511,6 @@ static int of_parse_dt(struct mhi_controller *mhi_cntrl,
 		&mhi_cntrl->timeout_ms);
 	if (ret)
 		mhi_cntrl->timeout_ms = MHI_TIMEOUT_MS;
-
-	ret = of_property_read_u32(mhi_cntrl->of_node,
-		"mhi,pcie-renegotiation", &renegotiation);
-	if((!ret) && (renegotiation))
-		mhi_cntrl->force_re_enum = true;
 
 	return 0;
 

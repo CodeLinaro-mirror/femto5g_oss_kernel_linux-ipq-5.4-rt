@@ -28,8 +28,6 @@
 		mhi,max-channels = <107>;
 		mhi,timeout = <2000>;
 
-		mhi,pcie-renegotiation = <1>;
-
 		#address-cells = <1>;
 		#size-cells = <0>;
 

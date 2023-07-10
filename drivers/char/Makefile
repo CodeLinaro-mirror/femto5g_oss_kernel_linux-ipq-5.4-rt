@@ -55,3 +55,4 @@ obj-$(CONFIG_ADI)		+= adi.o
 obj-$(CONFIG_DIAG_CHAR)         += diag/
 
 obj-$(CONFIG_FSM_DP)        += fsm-dp/
+obj-$(CONFIG_FSM_TTI_INTR)  += fsm-tti-intr/

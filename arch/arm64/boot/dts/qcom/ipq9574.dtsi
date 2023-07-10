@@ -3685,15 +3685,8 @@
 		     status = "disabled";
 	};
 
-	pps {
-		gpios = <&tlmm 21 0>;
-		assert-falling-edge;
-		compatible = "pps-gpio";
-		status = "disabled";
-	};
-
 	tti {
-		gpios = <&tlmm 23 0>;
+		gpios = <&tlmm 41 0>;
 		assert-falling-edge;
 		compatible = "tti-gpio";
 		status = "okay";

@@ -432,7 +432,6 @@ struct mhi_controller {
 	struct dentry *parent;
 
 	bool mhi_removed;
-	bool force_re_enum;
 };
 
 /**
