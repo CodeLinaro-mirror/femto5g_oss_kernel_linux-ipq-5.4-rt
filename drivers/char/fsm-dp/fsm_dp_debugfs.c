@@ -37,10 +37,6 @@ static const struct file_operations name ##_ops = {		\
 	.release = single_release,				\
 }
 
-#ifdef CONFIG_FSM_DP_TEST
-static int debugfs_create_testring_dir(struct dentry *, struct fsm_dp_drv *);
-#endif
-
 static struct dentry *__dent;
 
 static int __fsm_dp_rxqueue_vma_dump(
@@ -1334,11 +1330,6 @@ int fsm_dp_debugfs_init(struct fsm_dp_drv *drv)
 	if (debugfs_create_loopback_dir(__dent, drv))
 		goto err;
 
-#ifdef CONFIG_FSM_DP_TEST
-	if (debugfs_create_testring_dir(__dent, drv))
-		goto err;
-#endif
-
 	return 0;
 err:
 	debugfs_remove_recursive(__dent);
@@ -1351,110 +1342,6 @@ void fsm_dp_debugfs_cleanup(struct fsm_dp_drv *drv)
 	debugfs_remove_recursive(__dent);
 	__dent = NULL;
 }
-
-#ifdef CONFIG_FSM_DP_TEST
-static int debugfs_testring_enable_read(struct seq_file *s, void *unused)
-{
-	struct fsm_dp_test_ring *testrng =
-		(struct fsm_dp_test_ring *)s->private;
-
-	seq_printf(s, "%s\n", (testrng->enable) ? "enabled" : "disabled");
-
-	return 0;
-}
-
-static ssize_t debugfs_testring_enable_write(
-	struct file *fp,
-	const char __user *buf,
-	size_t count,
-	loff_t *ppos)
-{
-	struct fsm_dp_test_ring *testrng = (struct fsm_dp_test_ring *)
-			(((struct seq_file *)fp->private_data)->private);
-	unsigned int value = 0;
-
-	if (kstrtouint_from_user(buf, count, 0, &value))
-		return -EFAULT;
-
-	testrng->enable = (value) ? true : false;
-	return count;
-}
-DEFINE_DEBUGFS_OPS(debugfs_testring_enable, debugfs_testring_enable_read,
-		   debugfs_testring_enable_write);
-
-static int debugfs_testring_opstats_read(struct seq_file *s, void *unused)
-{
-	struct fsm_dp_test_ring *testrng =
-		(struct fsm_dp_test_ring *)s->private;
-
-	__fsm_dp_ring_opstats_dump(s, &testrng->ring.opstats);
-
-	return 0;
-}
-DEFINE_DEBUGFS_OPS(debugfs_testring_opstats,
-		   debugfs_testring_opstats_read, NULL);
-
-static int debugfs_testring_config_read(struct seq_file *s, void *unused)
-{
-	struct fsm_dp_test_ring *testrng =
-		(struct fsm_dp_test_ring *)s->private;
-
-	__fsm_dp_ring_config_dump(s, &testrng->ring);
-
-	return 0;
-}
-DEFINE_DEBUGFS_OPS(debugfs_testring_config,
-		   debugfs_testring_config_read, NULL);
-
-static int debugfs_testring_runtime_read(struct seq_file *s, void *unused)
-{
-	struct fsm_dp_test_ring *testrng =
-		(struct fsm_dp_test_ring *)s->private;
-
-	__fsm_dp_ring_runtime_dump(s, &testrng->ring);
-
-	return 0;
-}
-DEFINE_DEBUGFS_OPS(debugfs_testring_runtime,
-		   debugfs_testring_runtime_read, NULL);
-
-static int debugfs_create_testring_dir(
-	struct dentry *parent,
-	struct fsm_dp_drv *drv)
-{
-	struct dentry *entry = NULL, *dentry = NULL;
-
-	dentry = debugfs_create_dir("test-ring", parent);
-	if (IS_ERR(dentry))
-		return -ENOMEM;
-
-	entry = debugfs_create_file("config", 0444, dentry,
-				    &drv->test_ring,
-				    &debugfs_testring_config_ops);
-	if (!entry)
-		return -ENOMEM;
-
-	entry = debugfs_create_file("runtime", 0444, dentry,
-				    &drv->test_ring,
-				    &debugfs_testring_runtime_ops);
-	if (!entry)
-		return -ENOMEM;
-
-	entry = debugfs_create_file("opstats", 0444, dentry,
-				    &drv->test_ring,
-				    &debugfs_testring_opstats_ops);
-	if (!entry)
-		return -ENOMEM;
-
-	entry = debugfs_create_file("enable", 0644, dentry,
-				    &drv->test_ring,
-				    &debugfs_testring_enable_ops);
-	if (!entry)
-		return -ENOMEM;
-	return 0;
-}
-
-#endif /* CONFIG_FSM_DP_TEST */
 
 #else
 

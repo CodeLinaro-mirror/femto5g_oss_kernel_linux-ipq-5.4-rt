@@ -185,11 +185,6 @@ struct fsm_dp_loopback_task {
 	struct fsm_dp_loopback_stats stats;
 };
 
-struct fsm_dp_test_ring {
-	struct fsm_dp_ring ring;
-	bool enable;
-};
-
 struct fsm_dp_core_stats {
 	unsigned long tx_cnt;
 	unsigned long tx_err;
@@ -222,9 +217,6 @@ struct fsm_dp_drv {
 	fsm_dp_ring_index_t fsm_dp_prev_ul_prod_tail;
 	struct fsm_dp_rxqueue *napipoll_rxq;
 	unsigned int napipoll_cnt;
-#ifdef CONFIG_FSM_DP_TEST
-	struct fsm_dp_test_ring test_ring;
-#endif
 };
 
 struct fsm_dp_kernel_register_db_entry {

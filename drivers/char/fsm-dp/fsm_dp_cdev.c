@@ -385,37 +385,6 @@ static int __cdev_ioctl_txmode_cfg(
 	return ret;
 }
 
-#ifdef CONFIG_FSM_DP_TEST
-static int __cdev_ioctl_testring_write(
-	struct fsm_dp_cdev *cdev,
-	unsigned long ioarg)
-{
-	struct fsm_dp_drv *drv = cdev->pdrv;
-	struct fsm_dp_test_ring *test_ring = &drv->test_ring;
-	int ret = -EIO;
-
-	if (drv->test_ring.enable)
-		ret = fsm_dp_ring_write(&test_ring->ring,
-				     TEST_RING_WRITE_MAGIC_VALUE,
-					FSM_DP_RING_NORMAL_PRIORITY);
-	return ret;
-}
-
-static int __cdev_ioctl_testring_getcfg(
-	struct fsm_dp_cdev *cdev,
-	unsigned long ioarg)
-{
-	struct fsm_dp_drv *drv = cdev->pdrv;
-	struct fsm_dp_test_ring *test_ring = &drv->test_ring;
-	struct fsm_dp_ring_cfg cfg;
-	int ret;
-
-	fsm_dp_ring_get_cfg(&test_ring->ring, &cfg);
-	ret = copy_to_user((void __user *)ioarg, &cfg, sizeof(cfg));
-	return ret;
-}
-#endif
-
 static unsigned int fsm_dp_cdev_poll(struct file *file, poll_table *wait)
 {
 	struct fsm_dp_cdev *cdev = (struct fsm_dp_cdev *)file->private_data;
@@ -486,15 +455,6 @@ static long fsm_dp_cdev_ioctl(
 	case FSM_DP_IOCTL_SG_TX_LLC:
 		ret = __cdev_ioctl_sg_tx_llc(cdev, ioarg);
 		break;
-#ifdef CONFIG_FSM_DP_TEST
-	case FSM_DP_IOCTL_TEST_RING_WRITE:
-		ret = __cdev_ioctl_testring_write(cdev, ioarg);
-		break;
-	case FSM_DP_IOCTL_TEST_RING_GET_CONFIG:
-		ret = __cdev_ioctl_testring_getcfg(cdev, ioarg);
-		break;
-
-#endif
 	default:
 		break;
 	}
@@ -812,30 +772,6 @@ static int __cdev_rxqueue_mmap(
 	return 0;
 }
 
-#ifdef CONFIG_FSM_DP_TEST
-static int __fsm_dp_cdev_testring_mmap(
-	struct fsm_dp_cdev *cdev,
-	struct vm_area_struct *vma)
-{
-	struct fsm_dp_drv *drv = cdev->pdrv;
-	struct fsm_dp_ring *ring;
-	int ret = 0;
-
-	ring = &drv->test_ring.ring;
-
-	ret = remap_pfn_range(vma,
-			      vma->vm_start,
-			      page_to_pfn(ring->loc.page[0])
-			      (ring->loc.size),
-			      vma->vm_page_prot);
-	if (ret) {
-		FSM_DP_DEBUG("%s: mmap failed\n", __func__);
-		return ret;
-	}
-	return 0;
-}
-#endif
-
 static int fsm_dp_cdev_mmap(struct file *file, struct vm_area_struct *vma)
 {
 	struct fsm_dp_cdev *cdev = (struct fsm_dp_cdev *)file->private_data;
@@ -847,11 +783,6 @@ static int fsm_dp_cdev_mmap(struct file *file, struct vm_area_struct *vma)
 		  (unsigned long)vma->vm_page_prot.pgprot, vma->vm_flags);
 
 	cookie = vma->vm_pgoff << PAGE_SHIFT;
-
-#ifdef CONFIG_FSM_DP_TEST
-	if (cookie == TEST_RING_MMAP_COOKIE)
-		return __fsm_dp_cdev_testring_mmap(cdev, vma);
-#endif
 
 	if (is_rxqueue_mmap_cookie(cookie))
 		ret = __cdev_rxqueue_mmap(cdev, vma);

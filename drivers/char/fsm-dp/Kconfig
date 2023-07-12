@@ -5,12 +5,3 @@ menuconfig FSM_DP
 	help
 	  FSM DP driver interface. The FSM DP character driver
 	  provides a datapath server to user space.
-
-if FSM_DP
-config FSM_DP_TEST
-	bool "FSM DP driver testing"
-	depends on FSM_DP
-	default n
-	help
-	  To enable the features in driver for testing.
-endif # FSM_DP
