@@ -435,10 +435,6 @@ again:
 		goto again;
 	}
 
-#ifdef CONFIG_FSM_DP_TEST
-	if (data == TEST_RING_WRITE_MAGIC_VALUE)
-		data = prod_head << 1;
-#endif
 	/* Write to ring buffer with bit0 off */
 	ring_element[(prod_head & mask)].element_data = data;
 	ring_element[(prod_head & mask)].element_ctrl = flag << 1;
