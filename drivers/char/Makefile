@@ -56,3 +56,4 @@ obj-$(CONFIG_DIAG_CHAR)         += diag/
 
 obj-$(CONFIG_FSM_DP)        += fsm-dp/
 obj-$(CONFIG_FSM_TTI_INTR)  += fsm-tti-intr/
+obj-$(CONFIG_FSM_ORU_FORWARDER)    += fsm-oru-forwarder/
