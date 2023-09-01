@@ -836,15 +836,15 @@ int mhi_gen_n_tre(struct mhi_controller *mhi_cntrl, struct mhi_chan *mhi_chan,
 		enum MHI_FLAGS *flags_array, dma_addr_t *dma_addr_array,
 		unsigned int num);
 int mhi_queue_buf(struct mhi_device *mhi_dev, struct mhi_chan *mhi_chan,
-		  void *buf, size_t len, enum MHI_FLAGS mflags);
+                  void *buf, size_t len, enum MHI_FLAGS mflags);
 int mhi_queue_n_buf(struct mhi_device *mhi_dev, struct mhi_chan *mhi_chan,
-		void **buf_array, size_t *len_array,
-		enum MHI_FLAGS *mflags_array, dma_addr_t *dma_addr_array,
-		unsigned int num);
+                void **buf_array, size_t *len_array,
+                enum MHI_FLAGS *mflags_array, dma_addr_t *dma_addr_array,
+                unsigned int num);
 int mhi_queue_n_buf_not_supported(struct mhi_device *mhi_dev,
-		struct mhi_chan *mhi_chan, void **buf_array, size_t *len_array,
-		enum MHI_FLAGS *mflags_array, dma_addr_t *dma_addr_array,
-		unsigned int num);
+                struct mhi_chan *mhi_chan, void **buf_array, size_t *len_array,
+                enum MHI_FLAGS *mflags_array, dma_addr_t *dma_addr_array,
+                unsigned int num);
 int mhi_queue_skb(struct mhi_device *mhi_dev, struct mhi_chan *mhi_chan,
 		  void *buf, size_t len, enum MHI_FLAGS mflags);
 int mhi_queue_sclist(struct mhi_device *mhi_dev, struct mhi_chan *mhi_chan,
