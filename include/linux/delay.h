@@ -65,6 +65,12 @@ static inline void ssleep(unsigned int seconds)
 	msleep(seconds * 1000);
 }
 
+#ifdef CONFIG_PREEMPT_RT
+extern void cpu_chill(void);
+#else
+# define cpu_chill()	cpu_relax()
+#endif
+
 /* see Documentation/timers/timers-howto.rst for the thresholds */
 static inline void fsleep(unsigned long usecs)
 {
