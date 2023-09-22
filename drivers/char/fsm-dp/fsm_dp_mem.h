@@ -71,21 +71,14 @@ struct fsm_dp_ring_opstats {
 	unsigned long prod_tail_updt_stop;
 };
 
-struct fsm_dp_ring_def {
+struct fsm_dp_ring {
+	struct fsm_dp_mem_loc loc;	/* location */
+	unsigned int size;		/* size of ring(power of 2) */
 	fsm_dp_ring_index_t *cons_head;	/* consumer index header */
 	fsm_dp_ring_index_t *cons_tail;	/* consumer index tail */
 	fsm_dp_ring_index_t *prod_head;	/* producer index header */
 	fsm_dp_ring_index_t *prod_tail;	/* producer index tail */
 	fsm_dp_ring_element_t *element;	/* ring element */
-};
-
-struct fsm_dp_ring {
-	enum fsm_dp_ring_type ring_type;/* ring type */
-	struct fsm_dp_mem_loc loc;      /* location */
-	unsigned int num_ring_entries;  /* number of ring element of the ring */
-                                        /* must be power of 2 */
-	unsigned int num_ring;
-	struct fsm_dp_ring_def ring[FSM_DP_RING_TYPE_LAST];
 	struct fsm_dp_ring_opstats opstats;
 };
 
@@ -181,25 +174,15 @@ static inline void fsm_dp_mempool_put(struct fsm_dp_mempool *mempool)
 		fsm_dp_mempool_free(mempool);
 }
 
-int fsm_dp_ring_init(
-	struct fsm_dp_ring *ring,
-	unsigned int ringsz,
-	unsigned int mmap_cookie,
-	enum fsm_dp_ring_type type);
+int fsm_dp_ring_init(struct fsm_dp_ring *ring, unsigned int ringsz, unsigned int mmap_cookie);
 
 void fsm_dp_ring_cleanup(struct fsm_dp_ring *ring);
 
-int fsm_dp_ring_read(
-	struct fsm_dp_ring *ring,
-	fsm_dp_ring_element_data_t *element_data,
-	unsigned int *flag,
-	enum fsm_dp_ring_type type);
+int fsm_dp_ring_read(struct fsm_dp_ring *ring, fsm_dp_ring_element_data_t *element_data,
+		unsigned int *flag);
 
-int fsm_dp_ring_write(
-	struct fsm_dp_ring *ring,
-	fsm_dp_ring_element_data_t element_data,
-	unsigned int flag,
-	enum fsm_dp_ring_type type);
+int fsm_dp_ring_write(struct fsm_dp_ring *ring,	fsm_dp_ring_element_data_t element_data,
+		unsigned int flag);
 
 bool fsm_dp_ring_is_empty(struct fsm_dp_ring *ring);
 

@@ -35,12 +35,17 @@ static int debugfs_tti_status_show(struct seq_file *s, void *unused)
 {
 	struct fsm_tti_intr_drv *tti_drv_cntx =
 		(struct fsm_tti_intr_drv *)s->private;
+	unsigned long long tti_avg_interrupt_interval = 0;
 
 	if (IS_ERR(tti_drv_cntx)) {
 		FSM_TTI_ERROR("FSM-TTI: %s: driver context not allocated\n",
 			__func__);
 		return -ENOMEM;
 	}
+
+	tti_avg_interrupt_interval = (tti_drv_cntx->debugfs_stats.current_tti_recv_time
+		- tti_drv_cntx->debugfs_stats.first_tti_recv_time)
+		/ tti_drv_cntx->debugfs_stats.current_tti_count;
 
 	seq_puts(s, "  TTI Interrupt Driver\n");
 	seq_printf(s, "  Initial SF Number:                     %d\n",
@@ -58,6 +63,8 @@ static int debugfs_tti_status_show(struct seq_file *s, void *unused)
 	seq_printf(s, "  Seeding to first TTI delay(nsec):      %lld\n",
 		tti_drv_cntx->debugfs_stats.first_tti_recv_time -
 		tti_drv_cntx->debugfs_stats.sfn_slot_seeding_time);
+	seq_printf(s, "  TTI average interrupt interval(nsec):  %lld\n",
+		tti_avg_interrupt_interval);
 
 	return 0;
 }

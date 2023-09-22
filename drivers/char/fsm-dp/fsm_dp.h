@@ -97,7 +97,6 @@ struct vm_area_struct;
 
 #define FSM_DP_TX_FLAG_SG	0x01
 #define FSM_DP_TX_FLAG_LOOPBACK	0x02
-#define FSM_DP_TX_FLAG_LLC	0x04
 
 #define FSM_DP_ASSERT(cond, msg) do { \
 	if (cond) \
@@ -171,7 +170,6 @@ struct fsm_dp_loopback_job {
 	unsigned int length;
 	unsigned int dest;
 	bool rx_loopback;
-	bool llc;
 };
 
 struct fsm_dp_loopback_task {
@@ -200,14 +198,13 @@ struct fsm_dp_drv {
 	struct device *dev;
 	struct class *dev_class;
 	struct fsm_dp_mhi mhi;
-	struct fsm_dp_mhi mhi_llc;
 	struct cdev cdev;
 	struct net_device dummy_dev;
+	struct napi_struct napi;
 	struct mutex cdev_lock;
 	struct list_head cdev_head;
 	struct mutex mempool_lock;
 	atomic_t tx_seqnum;
-	atomic_t tx_seqnum_llc;
 	struct fsm_dp_mempool *mempool[FSM_DP_MEM_TYPE_LAST];
 	struct fsm_dp_rxqueue rxq[FSM_DP_RX_TYPE_LAST];
 	struct fsm_dp_loopback_task loopback;
@@ -241,8 +238,7 @@ int fsm_dp_tx(
 	unsigned int flag,
 	dma_addr_t dma_addr[]);
 
-void fsm_dp_rx(struct fsm_dp_drv *pdrv, void *data,
-			unsigned int length, bool llc);
+void fsm_dp_rx(struct fsm_dp_drv *pdrv, void *data, unsigned int length);
 
 void fsm_dp_hex_dump(unsigned char *buf, unsigned int len);
 

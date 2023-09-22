@@ -44,13 +44,6 @@
 #define FSM_DP_IOCTL_TX_MODE_CONFIG	\
 		_IOWR(FSM_DP_IOCTL_BASE, 6, unsigned int)
 
-#define FSM_DP_IOCTL_TX_LLC             \
-		_IOWR(FSM_DP_IOCTL_BASE, 7, struct iovec)
-
-#define FSM_DP_IOCTL_SG_TX_LLC		\
-		_IOWR(FSM_DP_IOCTL_BASE, 8, struct iovec)
-
-
 /* ioctl command for testing */
 #define FSM_DP_IOCTL_TEST_RING_WRITE	_IO(FSM_DP_IOCTL_BASE, 0x11)
 #define FSM_DP_IOCTL_TEST_RING_GET_CONFIG	\
@@ -238,29 +231,14 @@ struct fsm_dp_mmap_cfg {
 	__u32 cookie;	/* last parameter for mmap */
 };
 
-enum fsm_dp_ring_type {
-	FSM_DP_RING_TYPE_SINGLE = 0,
-	FSM_DP_RING_TYPE_DOUBLE = 1,
-	FSM_DP_RING_TYPE_LAST = 2,
-};
-
-#define FSM_DP_RING_NORMAL_PRIORITY FSM_DP_RING_TYPE_SINGLE
-#define FSM_DP_RING_HIGH_PRIORITY FSM_DP_RING_TYPE_DOUBLE
-
-struct fsm_struct_ring {
-	__u32 prod_head_off;            /* page offset of prod_head */
-	__u32 prod_tail_off;            /* page offset of prod_tail */
-	__u32 cons_head_off;            /* page offset of cons_head */
-	__u32 cons_tail_off;            /* page offset of cons_tail */
-	__u32 ringbuf_off;              /* page offset of ring buffer */
-};
-
 struct fsm_dp_ring_cfg {
-	struct fsm_dp_mmap_cfg mmap;    /* mmap parameters */
-	enum fsm_dp_ring_type ring_type;/* ring type */
-	__u32 size;                     /* ring size */
-	__u32 num_ring;                 /* number of rings */
-	struct fsm_struct_ring ring[FSM_DP_RING_TYPE_LAST];
+	struct fsm_dp_mmap_cfg mmap;	/* mmap parameters */
+	__u32 size;			/* ring size */
+	__u32 prod_head_off;		/* page offset of prod_head */
+	__u32 prod_tail_off;		/* page offset of prod_tail */
+	__u32 cons_head_off;		/* page offset of cons_head */
+	__u32 cons_tail_off;		/* page offset of cons_tail */
+	__u32 ringbuf_off;		/* page offset of ring buffer */
 };
 
 struct fsm_dp_mem_cfg {

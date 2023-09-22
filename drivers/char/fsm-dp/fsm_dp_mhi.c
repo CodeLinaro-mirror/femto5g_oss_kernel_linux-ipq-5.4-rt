@@ -83,7 +83,7 @@ static int __mhi_rx_replenish(
 
 	ret = 0;
 	/* if MHI TRE ring has entries more than threshold, skip replenishing */
-	if ((total_buf - nr) >= total_buf / 4)
+	if ((total_buf - nr) >= total_buf / 8)
 		return ret;
 	for (; nr > 0;) {
 		to_xfer = min(FSM_DP_MAX_IOV_SIZE, nr);
@@ -179,8 +179,8 @@ static void __mhi_ul_xfer_cb(
 	struct mhi_device *mhi_dev,
 	struct mhi_result *result)
 {
-	struct fsm_dp_drv *drv;
-	struct fsm_dp_mhi *mhi;
+	struct fsm_dp_drv *drv = mhi_device_get_devdata(mhi_dev);
+	struct fsm_dp_mhi *mhi = &drv->mhi;
 	void *addr = result->buf_addr;
 	struct fsm_dp_mempool *mempool;
 	unsigned int cl;
@@ -195,8 +195,6 @@ static void __mhi_ul_xfer_cb(
 		return;
 	}
 
-	mhi = mhi_device_get_devdata(mhi_dev);
-	drv = mhi->pdrv;
 	if (result->buf_indirect) {
 		__mhi_ul_skb_xfer_cmplt((struct sk_buff *) addr);
 		return;
@@ -261,16 +259,14 @@ static void __mhi_dl_xfer_cb(
 	struct mhi_device *mhi_dev,
 	struct mhi_result *result)
 {
-	struct fsm_dp_drv *drv;
-	struct fsm_dp_mhi *mhi;
-	struct fsm_dp_mempool *mempool;
+	struct fsm_dp_drv *drv = mhi_device_get_devdata(mhi_dev);
+	struct fsm_dp_mhi *mhi = &drv->mhi;
+	struct fsm_dp_mempool *mempool = drv->mempool[FSM_DP_MEM_TYPE_UL];
 
 	FSM_DP_DEBUG("%s: dl_xfer_result addr=%p dir=%u bytes=%lu status=%d\n",
 		  __func__, result->buf_addr, result->dir,
 		  result->bytes_xferd, result->transaction_status);
-	mhi = mhi_device_get_devdata(mhi_dev);
-	drv = mhi->pdrv;
-	mempool = drv->mempool[FSM_DP_MEM_TYPE_UL];
+
 	fsm_dp_hex_dump(result->buf_addr, result->bytes_xferd);
 	if (result->buf_addr == mempool->dummy_buf) {
 		mhi->stats.rx_outofbuf_drop++;
@@ -287,31 +283,24 @@ static void __mhi_dl_xfer_cb(
 		mhi->stats.rx_cnt++;
 		fsm_dp_set_buf_ts(mempool, result->buf_addr,
 				FSM_DP_UL_DMA_COMP_INDEX);
-		fsm_dp_rx(drv, result->buf_addr, result->bytes_xferd, mhi->llc);
+		fsm_dp_rx(drv, result->buf_addr, result->bytes_xferd);
 	}
 }
 
 static void __mhi_status_cb(struct mhi_device *mhi_dev, enum MHI_CB mhi_cb)
 {
-	struct fsm_dp_mhi *mhi = mhi_device_get_devdata(mhi_dev);
-	struct fsm_dp_drv *pdrv;
-
-
-	pdrv = mhi->pdrv;
+	struct fsm_dp_drv *pdrv = mhi_device_get_devdata(mhi_dev);
 
 	switch (mhi_cb) {
 	case MHI_CB_DEVICE_DESTROYED:
-		FSM_DP_WARN("%s: mhi%s device destroyed\n", __func__, (mhi->llc ? " LLC" : ""));
-		if (mhi->llc)
-			pdrv->mhi_llc.mhi_destroyed = true;
-		else
-			pdrv->mhi.mhi_destroyed = true;
+		FSM_DP_WARN("%s: mhi device destroyed\n", __func__);
+		pdrv->mhi.mhi_destroyed = true;
 		wmb();
 		fsm_dp_mempool_dev_destroy(pdrv);
 		break;
 	case MHI_CB_PENDING_DATA:
-		if (napi_schedule_prep(&mhi->napi)) {
-			__napi_schedule(&mhi->napi);
+		if (napi_schedule_prep(&pdrv->napi)) {
+			__napi_schedule(&pdrv->napi);
 			pdrv->stats.rx_int++;
 		}
 		break;
@@ -320,8 +309,9 @@ static void __mhi_status_cb(struct mhi_device *mhi_dev, enum MHI_CB mhi_cb)
 	}
 }
 
-int fsm_dp_mhi_rx_replenish(struct fsm_dp_drv *drv, struct fsm_dp_mhi *mhi)
+int fsm_dp_mhi_rx_replenish(struct fsm_dp_drv *drv)
 {
+	struct fsm_dp_mhi *mhi = &drv->mhi;
 	struct fsm_dp_mempool *mempool = drv->mempool[FSM_DP_MEM_TYPE_UL];
 	int ret;
 
@@ -337,30 +327,14 @@ static int fsm_dp_mhi_probe(
 	const struct mhi_device_id *id)
 {
 	struct fsm_dp_drv *pdrv = __pdrv;
-	struct fsm_dp_mhi *mhi;
 	int ret;
-	bool llc;
 
 	FSM_DP_DEBUG("%s: probing mhi\n", __func__);
 
-	FSM_DP_INFO("%s: probing mhi domain %d name %s mhi %llx dev %llx\n",
-			__func__, mhi_dev->domain, mhi_dev->chan_name,
-			(u64) mhi_dev, (u64) mhi_dev->mhi_cntrl->dev);
-
-	if (!strcmp(mhi_dev->chan_name, "IP_HW_LLC"))
-		llc = true;
-	else
-		llc = false;
-	FSM_DP_INFO("%s: name %s mhi %llx LLC channel%d\n", __func__,
-			mhi_dev->chan_name, (u64) mhi_dev, llc);
 	if (__pdrv == NULL)
 		return -ENODEV;
-	if (llc)
-		mhi = &pdrv->mhi_llc;
-	else
-		mhi = &pdrv->mhi;
 
-	mhi_device_set_devdata(mhi_dev, mhi);
+	mhi_device_set_devdata(mhi_dev, __pdrv);
 
 	ret = mhi_prepare_for_transfer(mhi_dev);
 	if (ret) {
@@ -368,12 +342,10 @@ static int fsm_dp_mhi_probe(
 		return ret;
 	}
 
-	mhi->mhi_dev = mhi_dev;
-	mhi->mhi_destroyed = false;
-	mhi->llc = llc;
-	mhi->pdrv = pdrv;
-	spin_lock_init(&mhi->rx_lock);
-	spin_lock_init(&mhi->tx_lock);
+	pdrv->mhi.mhi_dev = mhi_dev;
+	pdrv->mhi.mhi_destroyed = false;
+	spin_lock_init(&pdrv->mhi.rx_lock);
+	spin_lock_init(&pdrv->mhi.tx_lock);
 
 	FSM_DP_INFO("%s: fsm_dp_mhi_rx_replenish\n", __func__);
 	if (pdrv->mempool[FSM_DP_MEM_TYPE_UL]) {
@@ -382,7 +354,7 @@ static int fsm_dp_mhi_probe(
 			fsm_dp_mempool_dma_map(pdrv,
 				pdrv->mempool[FSM_DP_MEM_TYPE_UL],
 				FSM_DP_MEM_TYPE_UL));
-		ret = fsm_dp_mhi_rx_replenish(pdrv, mhi);
+		ret = fsm_dp_mhi_rx_replenish(pdrv);
 		if (ret) {
 			FSM_DP_ERROR("%s: fsm_dp_mhi_rx_replenish failed\n",
 								__func__);
@@ -400,7 +372,6 @@ static void fsm_dp_mhi_remove(struct mhi_device *mhi_dev)
 
 static struct mhi_device_id fsm_dp_mhi_match_table[] = {
 	{ .chan = "IP_HW0" },
-	{ .chan = "IP_HW_LLC" },
 	{},
 };
 
@@ -444,13 +415,6 @@ void fsm_dp_mhi_cleanup(struct fsm_dp_drv *pdrv)
 		FSM_DP_INFO("FSM-DP: fsm_dp_mhi_cleanup\n");
 		mhi_dev = pdrv->mhi.mhi_dev;
 		if (mhi_dev) {
-			FSM_DP_INFO("FSM-DP: unprepare %s\n",
-				mhi_dev->chan_name);
-			mhi_unprepare_from_transfer(mhi_dev);
-		}
-		mhi_dev = pdrv->mhi_llc.mhi_dev;
-		if (mhi_dev) {
-
 			FSM_DP_INFO("FSM-DP: unprepare %s\n",
 				mhi_dev->chan_name);
 			mhi_unprepare_from_transfer(mhi_dev);

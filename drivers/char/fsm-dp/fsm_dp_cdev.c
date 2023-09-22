@@ -91,8 +91,7 @@ static int __cdev_tx(
 	struct fsm_dp_cdev *cdev,
 	struct iovec __user *uiov,
 	unsigned int iov_nr,
-	bool sg,
-	bool llc)
+	bool sg)
 {
 	struct fsm_dp_drv *pdrv = cdev->pdrv;
 	struct fsm_dp_mempool_vma *mempool_vma;
@@ -135,18 +134,11 @@ static int __cdev_tx(
 					&cluster,
 					&c_offset);
 		if (!sg || !n) {
-
-			atomic_t *seqnum;
-
 			iov[n].iov_base = (char *)iov[n].iov_base -
 				sizeof(struct fsm_dp_msghdr);
 			iov[n].iov_len += sizeof(struct fsm_dp_msghdr);
-			if (llc)
-				seqnum = &pdrv->tx_seqnum_llc;
-			else
-				seqnum = &pdrv->tx_seqnum;
 			((struct fsm_dp_msghdr *)iov[n].iov_base)->sequence =
-				atomic_inc_return(seqnum);
+				atomic_inc_return(&pdrv->tx_seqnum);
 			c_offset -= sizeof(struct fsm_dp_msghdr);
 		}
 		{
@@ -212,8 +204,6 @@ static int __cdev_tx(
 		flag |= FSM_DP_TX_FLAG_SG;
 	if (cdev->tx_mode == TX_MODE_LOOPBACK)
 		flag |= FSM_DP_TX_FLAG_LOOPBACK;
-	if (llc)
-		flag |= FSM_DP_TX_FLAG_LLC;
 
 	ret = fsm_dp_tx(pdrv, iov, iov_nr, flag, dma_addr);
 
@@ -303,7 +293,7 @@ static int __cdev_ioctl_tx(struct fsm_dp_cdev *cdev, unsigned long ioarg)
 	if (!iov.iov_len || iov.iov_len > FSM_DP_MAX_IOV_SIZE)
 		return -EINVAL;
 
-	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, false, false);
+	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, false);
 	return ret;
 }
 
@@ -318,37 +308,7 @@ static int __cdev_ioctl_sg_tx(struct fsm_dp_cdev *cdev, unsigned long ioarg)
 	if (!iov.iov_len || iov.iov_len > FSM_DP_MAX_IOV_SIZE)
 		return -EINVAL;
 
-	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, true, false);
-	return ret;
-}
-
-static int __cdev_ioctl_tx_llc(struct fsm_dp_cdev *cdev, unsigned long ioarg)
-{
-	struct iovec iov;
-	int ret;
-
-	if (copy_from_user(&iov, (void __user *)ioarg, sizeof(iov)))
-		return -EFAULT;
-
-	if (!iov.iov_len || iov.iov_len > FSM_DP_MAX_IOV_SIZE)
-		return -EINVAL;
-
-	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, false, true);
-	return ret;
-}
-
-static int __cdev_ioctl_sg_tx_llc(struct fsm_dp_cdev *cdev, unsigned long ioarg)
-{
-	struct iovec iov;
-	int ret;
-
-	if (copy_from_user(&iov, (void __user *)ioarg, sizeof(iov)))
-		return -EFAULT;
-
-	if (!iov.iov_len || iov.iov_len > FSM_DP_MAX_IOV_SIZE)
-		return -EINVAL;
-
-	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, true, true);
+	ret = __cdev_tx(cdev, iov.iov_base, iov.iov_len, true);
 	return ret;
 }
 
@@ -448,12 +408,6 @@ static long fsm_dp_cdev_ioctl(
 		break;
 	case FSM_DP_IOCTL_TX_MODE_CONFIG:
 		ret = __cdev_ioctl_txmode_cfg(cdev, ioarg);
-		break;
-	case FSM_DP_IOCTL_TX_LLC:
-		ret = __cdev_ioctl_tx_llc(cdev, ioarg);
-		break;
-	case FSM_DP_IOCTL_SG_TX_LLC:
-		ret = __cdev_ioctl_sg_tx_llc(cdev, ioarg);
 		break;
 	default:
 		break;

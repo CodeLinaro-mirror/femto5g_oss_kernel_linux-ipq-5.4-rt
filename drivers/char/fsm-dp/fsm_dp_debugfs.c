@@ -129,33 +129,12 @@ static int __fsm_dp_ring_runtime_dump(
 	struct seq_file *s,
 	struct fsm_dp_ring *ring)
 {
-	seq_printf(s, "ProdHdr:                %u\n",
-			*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].prod_head);
-	seq_printf(s, "ProdTail:               %u\n",
-			*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].prod_tail);
-	seq_printf(s, "ConsHdr:                %u\n",
-			*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].cons_head);
-	seq_printf(s, "ConsTail:               %u\n",
-			*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].cons_tail);
+	seq_printf(s, "ProdHdr:                %u\n", *ring->prod_head);
+	seq_printf(s, "ProdTail:               %u\n", *ring->prod_tail);
+	seq_printf(s, "ConsHdr:                %u\n", *ring->cons_head);
+	seq_printf(s, "ConsTail:               %u\n", *ring->cons_tail);
 	seq_printf(s, "NumOfElementAvail:      %u\n",
-		   (*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].prod_head -
-			*ring->ring[FSM_DP_RING_NORMAL_PRIORITY].cons_tail) &
-				(ring->num_ring_entries - 1));
-	if (ring->ring_type == FSM_DP_RING_TYPE_SINGLE)
-		return 0;
-	seq_printf(s, "High Priority:\n");
-	seq_printf(s, "    ProdHdr:            %u\n",
-			*ring->ring[FSM_DP_RING_HIGH_PRIORITY].prod_head);
-	seq_printf(s, "    ProdTail:           %u\n",
-			*ring->ring[FSM_DP_RING_HIGH_PRIORITY].prod_tail);
-	seq_printf(s, "    ConsHdr:            %u\n",
-			*ring->ring[FSM_DP_RING_HIGH_PRIORITY].cons_head);
-	seq_printf(s, "    ConsTail:           %u\n",
-			*ring->ring[FSM_DP_RING_HIGH_PRIORITY].cons_tail);
-	seq_printf(s, "    NumOfElementAvail:  %u\n",
-		   (*ring->ring[FSM_DP_RING_HIGH_PRIORITY].prod_head -
-			*ring->ring[FSM_DP_RING_HIGH_PRIORITY].cons_tail) &
-					(ring->num_ring_entries - 1));
+		   (*ring->prod_head - *ring->cons_tail) & (ring->size - 1));
 	return 0;
 }
 
@@ -163,39 +142,16 @@ static int __fsm_dp_ring_config_dump(
 	struct seq_file *s,
 	struct fsm_dp_ring *ring)
 {
-	seq_printf(s, "Ring %llx MemoryAlloc:\n",
-			(u64) ring);
-	seq_printf(s, "         AllocAddr:     %llx\n",
-			(u64) ring->loc.base);
-	seq_printf(s, "         AllocSize:     0x%08lx\n",
-			ring->loc.size);
-	seq_printf(s, "         MmapCookie:    0x%08x\n",
-			ring->loc.cookie);
-	seq_printf(s, "Size:                   0x%x\n",
-			ring->num_ring_entries);
-	seq_printf(s, "ProdHdr:                %llx\n", (u64)
-			ring->ring[FSM_DP_RING_NORMAL_PRIORITY].prod_head);
-	seq_printf(s, "ProdTail:               %llx\n", (u64)
-			ring->ring[FSM_DP_RING_NORMAL_PRIORITY].prod_tail);
-	seq_printf(s, "ConsHdr:                %llx\n", (u64)
-			ring->ring[FSM_DP_RING_NORMAL_PRIORITY].cons_head);
-	seq_printf(s, "ConsTail:               %llx\n", (u64)
-			ring->ring[FSM_DP_RING_NORMAL_PRIORITY].cons_tail);
-	seq_printf(s, "RingBuf:                %llx\n", (u64)
-			ring->ring[FSM_DP_RING_NORMAL_PRIORITY].element);
-	if (ring->ring_type == FSM_DP_RING_TYPE_SINGLE)
-		return 0;
-	seq_printf(s, "High Priority:\n");
-	seq_printf(s, "    ProdHdr:            %llx\n", (u64)
-			ring->ring[FSM_DP_RING_HIGH_PRIORITY].prod_head);
-	seq_printf(s, "    ProdTail:           %llx\n", (u64)
-			ring->ring[FSM_DP_RING_HIGH_PRIORITY].prod_tail);
-	seq_printf(s, "    ConsHdr:            %llx\n", (u64)
-			ring->ring[FSM_DP_RING_HIGH_PRIORITY].cons_head);
-	seq_printf(s, "    ConsTail:           %llx\n", (u64)
-			ring->ring[FSM_DP_RING_HIGH_PRIORITY].cons_tail);
-	seq_printf(s, "    RingBuf:            %llx\n", (u64)
-			ring->ring[FSM_DP_RING_HIGH_PRIORITY].element);
+	seq_printf(s, "Ring %llx MemoryAlloc:\n", (u64) ring);
+	seq_printf(s, "         AllocAddr:     %llx\n", (u64) ring->loc.base);
+	seq_printf(s, "         AllocSize:     0x%08lx\n", ring->loc.size);
+	seq_printf(s, "         MmapCookie:    0x%08x\n", ring->loc.cookie);
+	seq_printf(s, "Size:                   0x%x\n", ring->size);
+	seq_printf(s, "ProdHdr:                %llx\n", (u64) ring->prod_head);
+	seq_printf(s, "ProdTail:               %llx\n", (u64) ring->prod_tail);
+	seq_printf(s, "ConsHdr:                %llx\n", (u64) ring->cons_head);
+	seq_printf(s, "ConsTail:               %llx\n", (u64) ring->cons_tail);
+	seq_printf(s, "RingBuf:                %llx\n", (u64) ring->element);
 	return 0;
 }
 
@@ -510,7 +466,7 @@ static ssize_t debugfs_ring_index_write(
 	if (kstrtouint_from_user(buf, count, 0, &value))
 		return -EFAULT;
 
-	if (value >= mempool->ring.num_ring_entries)
+	if (value >= mempool->ring.size)
 		return -EINVAL;
 
 	__ring_index[mempool->type] = value;
@@ -529,9 +485,7 @@ static int debugfs_ring_data_read(struct seq_file *s, void *unused)
 		fsm_dp_ring_element_t *elem_p;
 
 		elem_p =
-			(mempool->ring.ring
-				[FSM_DP_RING_NORMAL_PRIORITY].element
-					+ __ring_index[mempool->type]);
+			(mempool->ring.element + __ring_index[mempool->type]);
 
 		seq_printf(s, "0x%lx\n", elem_p->element_data);
 	}
@@ -943,43 +897,19 @@ static int debugfs_mhi_show(struct seq_file *s, void *unused)
 {
 	struct fsm_dp_drv *drv = (struct fsm_dp_drv *)s->private;
 	struct fsm_dp_mhi *mhi = &drv->mhi;
-	int i;
 
-	for (i = 0; i < 2; i++) {
-		if (IS_ERR_OR_NULL(mhi))
-			goto next;
-		else
-			seq_printf(s, "MHIDevice: %s ,",
-					(mhi->llc ? "IP_HW_LLC" : "IP_HW0"));
-		if (mhi->mhi_destroyed)
-			seq_printf(s, " OFF\n");
-		else
-			seq_printf(s, " ON\n");
-		seq_puts(s, "  Stats:\n");
-		seq_printf(s, "    TX:                 %lu\n",
-						mhi->stats.tx_cnt);
-		seq_printf(s, "    TX_ACKED:           %lu\n",
-						mhi->stats.tx_acked);
-		seq_printf(s, "    TX_ERR:             %lu\n",
-						mhi->stats.tx_err);
-		seq_printf(s, "    RX:                 %lu\n",
-						mhi->stats.rx_cnt);
-		seq_printf(s, "    RX_ERR:             %lu\n",
-						mhi->stats.rx_err);
-		seq_printf(s, "    RX_OUT_OF_BUF:      %lu\n",
-			mhi->stats.rx_out_of_buf);
-		seq_printf(s, "    RX_REPLENISH:       %lu\n",
-			mhi->stats.rx_replenish);
-		seq_printf(s, "    RX_REPLENISH_ERR:   %lu\n",
-			mhi->stats.rx_replenish_err);
-		seq_printf(s, "    RX_OUTOFBUF_DROP:   %lu\n",
-			mhi->stats.rx_outofbuf_drop);
-		seq_printf(s, "    RX_OUTOFBUF_RESYNC: %lu\n",
-			mhi->stats.rx_resync);
-next:
-		if (i == 0)
-			mhi = &drv->mhi_llc;
-	}
+	seq_printf(s, "MHIDevice:              %llx\n", (u64) mhi->mhi_dev);
+	seq_puts(s, "  Stats:\n");
+	seq_printf(s, "    TX:                 %lu\n", mhi->stats.tx_cnt);
+	seq_printf(s, "    TX_ACKED:           %lu\n", mhi->stats.tx_acked);
+	seq_printf(s, "    TX_ERR:             %lu\n", mhi->stats.tx_err);
+	seq_printf(s, "    RX:                 %lu\n", mhi->stats.rx_cnt);
+	seq_printf(s, "    RX_ERR:             %lu\n", mhi->stats.rx_err);
+	seq_printf(s, "    RX_OUT_OF_BUF:      %lu\n", mhi->stats.rx_out_of_buf);
+	seq_printf(s, "    RX_REPLENISH:       %lu\n", mhi->stats.rx_replenish);
+	seq_printf(s, "    RX_REPLENISH_ERR:   %lu\n", mhi->stats.rx_replenish_err);
+	seq_printf(s, "    RX_OUTOFBUF_DROP:   %lu\n", mhi->stats.rx_outofbuf_drop);
+	seq_printf(s, "    RX_OUTOFBUF_RESYNC: %lu\n", mhi->stats.rx_resync);
 
 	return 0;
 }
