@@ -232,7 +232,7 @@ static struct property *dup_and_fixup_symbol_prop(
 	if (k >= ovcs->count)
 		return NULL;
 
-	overlay_name_len = snprintf(NULL, 0, "%pOF", fragment->overlay);
+	overlay_name_len = scnprintf(NULL, 0, "%pOF", fragment->overlay);
 
 	if (overlay_name_len > path_len)
 		return NULL;

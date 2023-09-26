@@ -1477,7 +1477,7 @@ static char *cgroup_file_name(struct cgroup *cgrp, const struct cftype *cft,
 	    !(cgrp->root->flags & CGRP_ROOT_NOPREFIX)) {
 		const char *dbg = (cft->flags & CFTYPE_DEBUG) ? ".__DEBUG__." : "";
 
-		snprintf(buf, CGROUP_FILE_NAME_MAX, "%s%s.%s",
+		scnprintf(buf, CGROUP_FILE_NAME_MAX, "%s%s.%s",
 			 dbg, cgroup_on_dfl(cgrp) ? ss->name : ss->legacy_name,
 			 cft->name);
 	} else {
@@ -6603,9 +6603,9 @@ static ssize_t show_delegatable_files(struct cftype *files, char *buf,
 			continue;
 
 		if (prefix)
-			ret += snprintf(buf + ret, size - ret, "%s.", prefix);
+			ret += scnprintf(buf + ret, size - ret, "%s.", prefix);
 
-		ret += snprintf(buf + ret, size - ret, "%s\n", cft->name);
+		ret += scnprintf(buf + ret, size - ret, "%s\n", cft->name);
 
 		if (WARN_ON(ret >= size))
 			break;
@@ -6636,7 +6636,7 @@ static struct kobj_attribute cgroup_delegate_attr = __ATTR_RO(delegate);
 static ssize_t features_show(struct kobject *kobj, struct kobj_attribute *attr,
 			     char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "nsdelegate\nmemory_localevents\n");
+	return scnprintf(buf, PAGE_SIZE, "nsdelegate\nmemory_localevents\n");
 }
 static struct kobj_attribute cgroup_features_attr = __ATTR_RO(features);
 

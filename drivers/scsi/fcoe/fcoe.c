@@ -788,7 +788,7 @@ static int fcoe_shost_config(struct fc_lport *lport, struct device *dev)
 	if (!lport->vport)
 		fc_host_max_npiv_vports(lport->host) = USHRT_MAX;
 
-	snprintf(fc_host_symbolic_name(lport->host), FC_SYMBOLIC_NAME_SIZE,
+	scnprintf(fc_host_symbolic_name(lport->host), FC_SYMBOLIC_NAME_SIZE,
 		 "%s v%s over %s", FCOE_NAME, FCOE_VERSION,
 		 fcoe_netdev(lport)->name);
 
@@ -833,35 +833,35 @@ static void fcoe_fdmi_info(struct fc_lport *lport, struct net_device *netdev)
 			return;
 		}
 
-		snprintf(fc_host_serial_number(lport->host),
+		scnprintf(fc_host_serial_number(lport->host),
 			 FC_SERIAL_NUMBER_SIZE,
 			 "%s",
 			 fdmi->serial_number);
-		snprintf(fc_host_manufacturer(lport->host),
+		scnprintf(fc_host_manufacturer(lport->host),
 			 FC_SERIAL_NUMBER_SIZE,
 			 "%s",
 			 fdmi->manufacturer);
-		snprintf(fc_host_model(lport->host),
+		scnprintf(fc_host_model(lport->host),
 			 FC_SYMBOLIC_NAME_SIZE,
 			 "%s",
 			 fdmi->model);
-		snprintf(fc_host_model_description(lport->host),
+		scnprintf(fc_host_model_description(lport->host),
 			 FC_SYMBOLIC_NAME_SIZE,
 			 "%s",
 			 fdmi->model_description);
-		snprintf(fc_host_hardware_version(lport->host),
+		scnprintf(fc_host_hardware_version(lport->host),
 			 FC_VERSION_STRING_SIZE,
 			 "%s",
 			 fdmi->hardware_version);
-		snprintf(fc_host_driver_version(lport->host),
+		scnprintf(fc_host_driver_version(lport->host),
 			 FC_VERSION_STRING_SIZE,
 			 "%s",
 			 fdmi->driver_version);
-		snprintf(fc_host_optionrom_version(lport->host),
+		scnprintf(fc_host_optionrom_version(lport->host),
 			 FC_VERSION_STRING_SIZE,
 			 "%s",
 			 fdmi->optionrom_version);
-		snprintf(fc_host_firmware_version(lport->host),
+		scnprintf(fc_host_firmware_version(lport->host),
 			 FC_VERSION_STRING_SIZE,
 			 "%s",
 			 fdmi->firmware_version);
@@ -2787,7 +2787,7 @@ static void fcoe_set_vport_symbolic_name(struct fc_vport *vport)
 	struct fc_frame *fp;
 	size_t len;
 
-	snprintf(fc_host_symbolic_name(lport->host), FC_SYMBOLIC_NAME_SIZE,
+	scnprintf(fc_host_symbolic_name(lport->host), FC_SYMBOLIC_NAME_SIZE,
 		 "%s v%s over %s : %s", FCOE_NAME, FCOE_VERSION,
 		 fcoe_netdev(lport)->name, vport->symbolic_name);
 

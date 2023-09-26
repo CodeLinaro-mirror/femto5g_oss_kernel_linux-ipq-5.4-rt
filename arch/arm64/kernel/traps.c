@@ -72,9 +72,9 @@ static void dump_kernel_instr(const char *lvl, struct pt_regs *regs)
 		bad = aarch64_insn_read(&((u32 *)addr)[i], &val);
 
 		if (!bad)
-			p += sprintf(p, i == 0 ? "(%08x) " : "%08x ", val);
+			p += scnprintf(p, (sizeof(str) - (p - str)), i == 0 ? "(%08x) " : "%08x ", val);
 		else {
-			p += sprintf(p, "bad PC value");
+			p += scnprintf(p, (sizeof(str) - (p - str)), "bad PC value");
 			break;
 		}
 	}

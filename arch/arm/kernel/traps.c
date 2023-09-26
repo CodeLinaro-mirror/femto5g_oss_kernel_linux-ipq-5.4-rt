@@ -144,9 +144,9 @@ static void dump_mem(const char *lvl, const char *str, unsigned long bottom,
 			if (p >= bottom && p < top) {
 				unsigned long val;
 				if (__get_user(val, (unsigned long *)p) == 0)
-					sprintf(str + i * 9, " %08lx", val);
+					scnprintf(str + i * 9, sizeof(" 12345678"), " %08lx", val);
 				else
-					sprintf(str + i * 9, " ????????");
+					scnprintf(str + i * 9, sizeof(" 12345678"), " ????????");
 			}
 		}
 		printk("%s%04lx:%s\n", lvl, first & 0xffff, str);
@@ -177,10 +177,10 @@ static void __dump_instr(const char *lvl, struct pt_regs *regs)
 			bad = get_user(val, &((u32 *)addr)[i]);
 
 		if (!bad)
-			p += sprintf(p, i == 0 ? "(%0*x) " : "%0*x ",
+			p += scnprintf(p, (sizeof(str) - (p - str)), i == 0 ? "(%0*x) " : "%0*x ",
 					width, val);
 		else {
-			p += sprintf(p, "bad PC value");
+			p += scnprintf(p, (sizeof(str) - (p - str)), "bad PC value");
 			break;
 		}
 	}

@@ -544,7 +544,7 @@ unsigned long netdev_boot_base(const char *prefix, int unit)
 	char name[IFNAMSIZ];
 	int i;
 
-	sprintf(name, "%s%d", prefix, unit);
+	scnprintf(name, sizeof(name), "%s%d", prefix, unit);
 
 	/*
 	 * If device already registered then return base of 1
@@ -999,7 +999,7 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
 				continue;
 
 			/*  avoid cases where sscanf is not exact inverse of printf */
-			snprintf(buf, IFNAMSIZ, name, i);
+			scnprintf(buf, IFNAMSIZ, name, i);
 			if (!strncmp(buf, d->name, IFNAMSIZ))
 				set_bit(i, inuse);
 		}
@@ -1008,7 +1008,7 @@ static int __dev_alloc_name(struct net *net, const char *name, char *buf)
 		free_page((unsigned long) inuse);
 	}
 
-	snprintf(buf, IFNAMSIZ, name, i);
+	scnprintf(buf, IFNAMSIZ, name, i);
 	if (!__dev_get_by_name(net, buf))
 		return i;
 
@@ -1228,7 +1228,7 @@ int dev_get_alias(const struct net_device *dev, char *name, size_t len)
 	rcu_read_lock();
 	alias = rcu_dereference(dev->ifalias);
 	if (alias)
-		ret = snprintf(name, len, "%s", alias->ifalias);
+		ret = scnprintf(name, len, "%s", alias->ifalias);
 	rcu_read_unlock();
 
 	return ret;
@@ -7766,7 +7766,7 @@ static int netdev_adjacent_sysfs_add(struct net_device *dev,
 {
 	char linkname[IFNAMSIZ+7];
 
-	sprintf(linkname, dev_list == &dev->adj_list.upper ?
+	scnprintf(linkname, sizeof(linkname), dev_list == &dev->adj_list.upper ?
 		"upper_%s" : "lower_%s", adj_dev->name);
 	return sysfs_create_link(&(dev->dev.kobj), &(adj_dev->dev.kobj),
 				 linkname);
@@ -7777,7 +7777,7 @@ static void netdev_adjacent_sysfs_del(struct net_device *dev,
 {
 	char linkname[IFNAMSIZ+7];
 
-	sprintf(linkname, dev_list == &dev->adj_list.upper ?
+	scnprintf(linkname, sizeof(linkname), dev_list == &dev->adj_list.upper ?
 		"upper_%s" : "lower_%s", name);
 	sysfs_remove_link(&(dev->dev.kobj), linkname);
 }
@@ -10850,9 +10850,9 @@ static void __net_exit default_device_exit(struct net *net)
 			continue;
 
 		/* Push remaining network devices to init_net */
-		snprintf(fb_name, IFNAMSIZ, "dev%d", dev->ifindex);
+		scnprintf(fb_name, IFNAMSIZ, "dev%d", dev->ifindex);
 		if (__dev_get_by_name(&init_net, fb_name))
-			snprintf(fb_name, IFNAMSIZ, "dev%%d");
+			scnprintf(fb_name, IFNAMSIZ, "dev%%d");
 		err = dev_change_net_namespace(dev, &init_net, fb_name);
 		if (err) {
 			pr_emerg("%s: failed to move %s to init_net: %d\n",

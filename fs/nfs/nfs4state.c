@@ -1217,7 +1217,7 @@ void nfs4_schedule_state_manager(struct nfs_client *clp)
 	 * manager is the only thread that ever changes the rpc_xprt
 	 * after it's initialized.  At this point, we're single threaded. */
 	rcu_read_lock();
-	snprintf(buf, sizeof(buf), "%s-manager",
+	scnprintf(buf, sizeof(buf), "%s-manager",
 			rpc_peeraddr2str(clp->cl_rpcclient, RPC_DISPLAY_ADDR));
 	rcu_read_unlock();
 	task = kthread_run(nfs4_run_state_manager, clp, "%s", buf);

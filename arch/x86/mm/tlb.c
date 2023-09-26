@@ -886,7 +886,7 @@ static ssize_t tlbflush_read_file(struct file *file, char __user *user_buf,
 	char buf[32];
 	unsigned int len;
 
-	len = sprintf(buf, "%ld\n", tlb_single_page_flush_ceiling);
+	len = scnprintf(buf, sizeof(buf), "%ld\n", tlb_single_page_flush_ceiling);
 	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
 }
 

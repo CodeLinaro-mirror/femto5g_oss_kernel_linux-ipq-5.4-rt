@@ -1040,7 +1040,7 @@ static ssize_t oom_adj_read(struct file *file, char __user *buf, size_t count,
 		oom_adj = (task->signal->oom_score_adj * -OOM_DISABLE) /
 			  OOM_SCORE_ADJ_MAX;
 	put_task_struct(task);
-	len = snprintf(buffer, sizeof(buffer), "%d\n", oom_adj);
+	len = scnprintf(buffer, sizeof(buffer), "%d\n", oom_adj);
 	return simple_read_from_buffer(buf, count, ppos, buffer, len);
 }
 
@@ -1193,7 +1193,7 @@ static ssize_t oom_score_adj_read(struct file *file, char __user *buf,
 		return -ESRCH;
 	oom_score_adj = task->signal->oom_score_adj;
 	put_task_struct(task);
-	len = snprintf(buffer, sizeof(buffer), "%hd\n", oom_score_adj);
+	len = scnprintf(buffer, sizeof(buffer), "%hd\n", oom_score_adj);
 	return simple_read_from_buffer(buf, count, ppos, buffer, len);
 }
 
@@ -1332,7 +1332,7 @@ static ssize_t proc_fault_inject_read(struct file * file, char __user * buf,
 	make_it_fail = task->make_it_fail;
 	put_task_struct(task);
 
-	len = snprintf(buffer, sizeof(buffer), "%i\n", make_it_fail);
+	len = scnprintf(buffer, sizeof(buffer), "%i\n", make_it_fail);
 
 	return simple_read_from_buffer(buf, count, ppos, buffer, len);
 }
@@ -1403,7 +1403,7 @@ static ssize_t proc_fail_nth_read(struct file *file, char __user *buf,
 	task = get_proc_task(file_inode(file));
 	if (!task)
 		return -ESRCH;
-	len = snprintf(numbuf, sizeof(numbuf), "%u\n", task->fail_nth);
+	len = scnprintf(numbuf, sizeof(numbuf), "%u\n", task->fail_nth);
 	put_task_struct(task);
 	return simple_read_from_buffer(buf, count, ppos, numbuf, len);
 }
@@ -2242,7 +2242,7 @@ proc_map_files_readdir(struct file *file, struct dir_context *ctx)
 		unsigned int len;
 
 		p = genradix_ptr(&fa, i);
-		len = snprintf(buf, sizeof(buf), "%lx-%lx", p->start, p->end);
+		len = scnprintf(buf, sizeof(buf), "%lx-%lx", p->start, p->end);
 		if (!proc_fill_cache(file, ctx,
 				      buf, len,
 				      proc_map_files_instantiate,
@@ -2724,7 +2724,7 @@ static ssize_t proc_coredump_filter_read(struct file *file, char __user *buf,
 	ret = 0;
 	mm = get_task_mm(task);
 	if (mm) {
-		len = snprintf(buffer, sizeof(buffer), "%08lx\n",
+		len = scnprintf(buffer, sizeof(buffer), "%08lx\n",
 			       ((mm->flags & MMF_DUMP_FILTER_MASK) >>
 				MMF_DUMP_FILTER_SHIFT));
 		mmput(mm);
@@ -3162,7 +3162,7 @@ static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
 	struct qstr name;
 
 	name.name = buf;
-	name.len = snprintf(buf, sizeof(buf), "%u", pid);
+	name.len = scnprintf(buf, sizeof(buf), "%u", pid);
 	/* no ->d_hash() rejects on procfs */
 	dentry = d_hash_and_lookup(mnt->mnt_root, &name);
 	if (dentry) {
@@ -3174,7 +3174,7 @@ static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
 		return;
 
 	name.name = buf;
-	name.len = snprintf(buf, sizeof(buf), "%u", tgid);
+	name.len = scnprintf(buf, sizeof(buf), "%u", tgid);
 	leader = d_hash_and_lookup(mnt->mnt_root, &name);
 	if (!leader)
 		goto out;
@@ -3186,7 +3186,7 @@ static void proc_flush_task_mnt(struct vfsmount *mnt, pid_t pid, pid_t tgid)
 		goto out_put_leader;
 
 	name.name = buf;
-	name.len = snprintf(buf, sizeof(buf), "%u", pid);
+	name.len = scnprintf(buf, sizeof(buf), "%u", pid);
 	dentry = d_hash_and_lookup(dir, &name);
 	if (dentry) {
 		d_invalidate(dentry);
@@ -3366,7 +3366,7 @@ int proc_pid_readdir(struct file *file, struct dir_context *ctx)
 		if (!has_pid_permissions(ns, iter.task, HIDEPID_INVISIBLE))
 			continue;
 
-		len = snprintf(name, sizeof(name), "%u", iter.tgid);
+		len = scnprintf(name, sizeof(name), "%u", iter.tgid);
 		ctx->pos = iter.tgid + TGID_OFFSET;
 		if (!proc_fill_cache(file, ctx, name, len,
 				     proc_pid_instantiate, iter.task, NULL)) {
@@ -3693,7 +3693,7 @@ static int proc_task_readdir(struct file *file, struct dir_context *ctx)
 		char name[10 + 1];
 		unsigned int len;
 		tid = task_pid_nr_ns(task, ns);
-		len = snprintf(name, sizeof(name), "%u", tid);
+		len = scnprintf(name, sizeof(name), "%u", tid);
 		if (!proc_fill_cache(file, ctx, name, len,
 				proc_task_instantiate, task, NULL)) {
 			/* returning this tgid failed, save it as the first

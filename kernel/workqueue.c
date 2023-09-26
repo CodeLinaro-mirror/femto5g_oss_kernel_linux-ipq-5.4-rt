@@ -1934,10 +1934,10 @@ static struct worker *create_worker(struct worker_pool *pool)
 	worker->id = id;
 
 	if (pool->cpu >= 0)
-		snprintf(id_buf, sizeof(id_buf), "%d:%d%s", pool->cpu, id,
+		scnprintf(id_buf, sizeof(id_buf), "%d:%d%s", pool->cpu, id,
 			 pool->attrs->nice < 0  ? "H" : "");
 	else
-		snprintf(id_buf, sizeof(id_buf), "u%d:%d", pool->id, id);
+		scnprintf(id_buf, sizeof(id_buf), "u%d:%d", pool->id, id);
 
 	worker->task = kthread_create_on_node(worker_thread, worker, pool->node,
 					      "kworker/%s", id_buf);

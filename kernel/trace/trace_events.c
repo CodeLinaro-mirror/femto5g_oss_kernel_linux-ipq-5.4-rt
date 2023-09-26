@@ -1323,7 +1323,7 @@ event_id_read(struct file *filp, char __user *ubuf, size_t cnt, loff_t *ppos)
 	if (unlikely(!id))
 		return -ENODEV;
 
-	len = sprintf(buf, "%d\n", id);
+	len = scnprintf(buf, sizeof(buf), "%d\n", id);
 
 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, len);
 }
@@ -2113,12 +2113,12 @@ static char *eval_replace(char *ptr, struct trace_eval_map *map, int len)
 	int elen;
 
 	/* Find the length of the eval value as a string */
-	elen = snprintf(ptr, 0, "%ld", map->eval_value);
+	elen = scnprintf(ptr, 0, "%ld", map->eval_value);
 	/* Make sure there's enough room to replace the string with the value */
 	if (len < elen)
 		return NULL;
 
-	snprintf(ptr, elen + 1, "%ld", map->eval_value);
+	scnprintf(ptr, elen + 1, "%ld", map->eval_value);
 
 	/* Get the rest of the string of ptr */
 	rlen = strlen(ptr + len);

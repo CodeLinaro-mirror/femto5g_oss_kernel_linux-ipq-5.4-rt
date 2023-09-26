@@ -2327,7 +2327,7 @@ show_smt_control(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	const char *state = smt_states[cpu_smt_control];
 
-	return snprintf(buf, PAGE_SIZE - 2, "%s\n", state);
+	return scnprintf(buf, PAGE_SIZE - 2, "%s\n", state);
 }
 
 static ssize_t
@@ -2341,7 +2341,7 @@ static DEVICE_ATTR(control, 0644, show_smt_control, store_smt_control);
 static ssize_t
 show_smt_active(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE - 2, "%d\n", sched_smt_active());
+	return scnprintf(buf, PAGE_SIZE - 2, "%d\n", sched_smt_active());
 }
 static DEVICE_ATTR(active, 0444, show_smt_active, NULL);
 

@@ -3126,8 +3126,8 @@ void d_tmpfile(struct dentry *dentry, struct inode *inode)
 		!d_unlinked(dentry));
 	spin_lock(&dentry->d_parent->d_lock);
 	spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
-	dentry->d_name.len = sprintf(dentry->d_iname, "#%llu",
-				(unsigned long long)inode->i_ino);
+	dentry->d_name.len = scnprintf(dentry->d_iname, sizeof(dentry->d_iname),
+				       "#%llu", (unsigned long long)inode->i_ino);
 	spin_unlock(&dentry->d_lock);
 	spin_unlock(&dentry->d_parent->d_lock);
 	d_instantiate(dentry, inode);

@@ -142,7 +142,7 @@ KERNEL_ATTR_RO(vmcoreinfo);
 static ssize_t realtime_show(struct kobject *kobj,
 			     struct kobj_attribute *attr, char *buf)
 {
-	return snprintf(buf, sizeof(char*), "%d\n", 1);
+	return scnprintf(buf, sizeof(int) + 1, "%d\n", 1);
 }
 KERNEL_ATTR_RO(realtime);
 #endif

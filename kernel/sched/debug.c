@@ -279,7 +279,7 @@ static struct ctl_table *sd_alloc_ctl_cpu_table(int cpu)
 
 	i = 0;
 	for_each_domain(cpu, sd) {
-		snprintf(buf, 32, "domain%d", i);
+		scnprintf(buf, sizeof(buf), "domain%d", i);
 		entry->procname = kstrdup(buf, GFP_KERNEL);
 		entry->mode = 0555;
 		entry->child = sd_alloc_ctl_domain_table(sd);
@@ -341,7 +341,7 @@ void register_sched_domain_sysctl(void)
 			sd_free_ctl_entry(&e->child);
 
 		if (!e->procname) {
-			snprintf(buf, 32, "cpu%d", i);
+			scnprintf(buf, sizeof(buf), "cpu%d", i);
 			e->procname = kstrdup(buf, GFP_KERNEL);
 		}
 		e->mode = 0555;

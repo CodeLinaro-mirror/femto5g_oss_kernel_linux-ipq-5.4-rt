@@ -2856,7 +2856,7 @@ tracing_srd_read(struct file *filp, char __user *ubuf,
 	int count;
 
 	if (srd && !*ppos) {
-		count = snprintf(str, sizeof(str), SRD_PRINT_STR);
+		count = scnprintf(str, sizeof(str), SRD_PRINT_STR);
 		return simple_read_from_buffer(ubuf, cnt, ppos, str, count);
 	} else {
 		return 0;
@@ -4609,13 +4609,13 @@ tracing_cpumask_read(struct file *filp, char __user *ubuf,
 	char *mask_str;
 	int len;
 
-	len = snprintf(NULL, 0, "%*pb\n",
+	len = scnprintf(NULL, 0, "%*pb\n",
 		       cpumask_pr_args(tr->tracing_cpumask)) + 1;
 	mask_str = kmalloc(len, GFP_KERNEL);
 	if (!mask_str)
 		return -ENOMEM;
 
-	len = snprintf(mask_str, len, "%*pb\n",
+	len = scnprintf(mask_str, len, "%*pb\n",
 		       cpumask_pr_args(tr->tracing_cpumask));
 	if (len >= count) {
 		count = -EINVAL;
@@ -5600,7 +5600,7 @@ tracing_set_trace_read(struct file *filp, char __user *ubuf,
 	int r;
 
 	mutex_lock(&trace_types_lock);
-	r = sprintf(buf, "%s\n", tr->current_trace->name);
+	r = scnprintf(buf, sizeof(buf), "%s\n", tr->current_trace->name);
 	mutex_unlock(&trace_types_lock);
 
 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
@@ -5947,7 +5947,7 @@ tracing_nsecs_read(unsigned long *ptr, char __user *ubuf,
 	char buf[64];
 	int r;
 
-	r = snprintf(buf, sizeof(buf), "%ld\n",
+	r = scnprintf(buf, sizeof(buf), "%ld\n",
 		     *ptr == (unsigned long)-1 ? -1 : nsecs_to_usecs(*ptr));
 	if (r > sizeof(buf))
 		r = sizeof(buf);
@@ -6445,15 +6445,15 @@ tracing_entries_read(struct file *filp, char __user *ubuf,
 
 		if (buf_size_same) {
 			if (!ring_buffer_expanded)
-				r = sprintf(buf, "%lu (expanded: %lu)\n",
+				r = scnprintf(buf, sizeof(buf), "%lu (expanded: %lu)\n",
 					    size >> 10,
 					    trace_buf_size >> 10);
 			else
-				r = sprintf(buf, "%lu\n", size >> 10);
+				r = scnprintf(buf, sizeof(buf), "%lu\n", size >> 10);
 		} else
-			r = sprintf(buf, "X\n");
+			r = scnprintf(buf, sizeof(buf), "X\n");
 	} else
-		r = sprintf(buf, "%lu\n", per_cpu_ptr(tr->trace_buffer.data, cpu)->entries >> 10);
+		r = scnprintf(buf, sizeof(buf), "%lu\n", per_cpu_ptr(tr->trace_buffer.data, cpu)->entries >> 10);
 
 	mutex_unlock(&trace_types_lock);
 
@@ -6505,9 +6505,9 @@ tracing_total_entries_read(struct file *filp, char __user *ubuf,
 			expanded_size += trace_buf_size >> 10;
 	}
 	if (ring_buffer_expanded)
-		r = sprintf(buf, "%lu\n", size);
+		r = scnprintf(buf, sizeof(buf), "%lu\n", size);
 	else
-		r = sprintf(buf, "%lu (expanded: %lu)\n", size, expanded_size);
+		r = scnprintf(buf, sizeof(buf), "%lu (expanded: %lu)\n", size, expanded_size);
 	mutex_unlock(&trace_types_lock);
 
 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
@@ -7234,8 +7234,8 @@ void tracing_log_err(struct trace_array *tr,
 		return;
 	}
 
-	snprintf(err->loc, TRACING_LOG_LOC_MAX, "%s: error: ", loc);
-	snprintf(err->cmd, MAX_FILTER_STR_VAL,"\n" CMD_PREFIX "%s\n", cmd);
+	scnprintf(err->loc, TRACING_LOG_LOC_MAX, "%s: error: ", loc);
+	scnprintf(err->cmd, MAX_FILTER_STR_VAL,"\n" CMD_PREFIX "%s\n", cmd);
 
 	err->info.errs = errs;
 	err->info.type = type;
@@ -7993,7 +7993,7 @@ tracing_init_tracefs_percpu(struct trace_array *tr, long cpu)
 	if (!d_percpu)
 		return;
 
-	snprintf(cpu_dir, 30, "cpu%ld", cpu);
+	scnprintf(cpu_dir, sizeof(cpu_dir), "cpu%ld", cpu);
 	d_cpu = tracefs_create_dir(cpu_dir, d_percpu);
 	if (!d_cpu) {
 		pr_warn("Could not create tracefs '%s' entry\n", cpu_dir);
@@ -8334,7 +8334,7 @@ rb_simple_read(struct file *filp, char __user *ubuf,
 	int r;
 
 	r = tracer_tracing_is_on(tr);
-	r = sprintf(buf, "%d\n", r);
+	r = scnprintf(buf, sizeof(buf), "%d\n", r);
 
 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
 }
@@ -8390,7 +8390,7 @@ buffer_percent_read(struct file *filp, char __user *ubuf,
 	int r;
 
 	r = tr->buffer_percent;
-	r = sprintf(buf, "%d\n", r);
+	r = scnprintf(buf, sizeof(buf), "%d\n", r);
 
 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
 }

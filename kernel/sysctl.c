@@ -2298,7 +2298,7 @@ static int proc_put_long(void __user **buf, size_t *size, unsigned long val,
 	int len;
 	char tmp[TMPBUFLEN], *p = tmp;
 
-	sprintf(p, "%s%lu", neg ? "-" : "", val);
+	scnprintf(p, sizeof(tmp), "%s%lu", neg ? "-" : "", val);
 	len = strlen(tmp);
 	if (len > *size)
 		len = *size;

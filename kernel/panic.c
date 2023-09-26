@@ -393,7 +393,8 @@ const char *print_tainted(void)
 		char *s;
 		int i;
 
-		s = buf + sprintf(buf, "Tainted: ");
+		s = buf + scnprintf(buf, sizeof(buf) - TAINT_FLAGS_COUNT,
+				    "Tainted: ");
 		for (i = 0; i < TAINT_FLAGS_COUNT; i++) {
 			const struct taint_flag *t = &taint_flags[i];
 			*s++ = test_bit(i, &tainted_mask) ?
@@ -401,7 +402,7 @@ const char *print_tainted(void)
 		}
 		*s = 0;
 	} else
-		snprintf(buf, sizeof(buf), "Not tainted");
+		scnprintf(buf, sizeof(buf), "Not tainted");
 
 	return buf;
 }

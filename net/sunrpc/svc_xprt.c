@@ -127,7 +127,7 @@ int svc_print_xprts(char *buf, int maxlen)
 	list_for_each_entry(xcl, &svc_xprt_class_list, xcl_list) {
 		int slen;
 
-		slen = snprintf(tmpstr, sizeof(tmpstr), "%s %d\n",
+		slen = scnprintf(tmpstr, sizeof(tmpstr), "%s %d\n",
 				xcl->xcl_name, xcl->xcl_max_payload);
 		if (slen >= sizeof(tmpstr) || len + slen >= maxlen)
 			break;
@@ -1314,7 +1314,7 @@ static int svc_one_xprt_name(const struct svc_xprt *xprt,
 {
 	int len;
 
-	len = snprintf(pos, remaining, "%s %u\n",
+	len = scnprintf(pos, remaining, "%s %u\n",
 			xprt->xpt_class->xcl_name,
 			svc_xprt_local_port(xprt));
 	if (len >= remaining)

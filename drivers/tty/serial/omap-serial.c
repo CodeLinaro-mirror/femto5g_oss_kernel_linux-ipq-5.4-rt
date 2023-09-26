@@ -1705,7 +1705,7 @@ static int serial_omap_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto err_rs485;
 
-	sprintf(up->name, "OMAP UART%d", up->port.line);
+	scnprintf(up->name, sizeof(up->name), "OMAP UART%d", up->port.line);
 	up->port.mapbase = mem->start;
 	up->port.membase = base;
 	up->port.flags = omap_up_info->flags;

@@ -1925,9 +1925,10 @@ static int ffs_epfiles_create(struct ffs_data *ffs)
 		epfile->ffs = ffs;
 		mutex_init(&epfile->mutex);
 		if (ffs->user_flags & FUNCTIONFS_VIRTUAL_ADDR)
-			sprintf(epfile->name, "ep%02x", ffs->eps_addrmap[i]);
+			scnprintf(epfile->name, sizeof(epfile->name), "ep%02x",
+				  ffs->eps_addrmap[i]);
 		else
-			sprintf(epfile->name, "ep%u", i);
+			scnprintf(epfile->name, sizeof(epfile->name), "ep%u", i);
 		epfile->dentry = ffs_sb_create_file(ffs->sb, epfile->name,
 						 epfile,
 						 &ffs_epfile_operations);

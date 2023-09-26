@@ -832,9 +832,9 @@ char * __init efi_md_typeattr_format(char *buf, size_t size,
 
 	pos = buf;
 	if (md->type >= ARRAY_SIZE(memory_type_name))
-		type_len = snprintf(pos, size, "[type=%u", md->type);
+		type_len = scnprintf(pos, size, "[type=%u", md->type);
 	else
-		type_len = snprintf(pos, size, "[%-*s",
+		type_len = scnprintf(pos, size, "[%-*s",
 				    (int)(sizeof(memory_type_name[0]) - 1),
 				    memory_type_name[md->type]);
 	if (type_len >= size)
@@ -849,10 +849,10 @@ char * __init efi_md_typeattr_format(char *buf, size_t size,
 		     EFI_MEMORY_WP | EFI_MEMORY_RP | EFI_MEMORY_XP |
 		     EFI_MEMORY_NV |
 		     EFI_MEMORY_RUNTIME | EFI_MEMORY_MORE_RELIABLE))
-		snprintf(pos, size, "|attr=0x%016llx]",
+		scnprintf(pos, size, "|attr=0x%016llx]",
 			 (unsigned long long)attr);
 	else
-		snprintf(pos, size,
+		scnprintf(pos, size,
 			 "|%3s|%2s|%2s|%2s|%2s|%2s|%2s|%3s|%2s|%2s|%2s|%2s]",
 			 attr & EFI_MEMORY_RUNTIME ? "RUN" : "",
 			 attr & EFI_MEMORY_MORE_RELIABLE ? "MR" : "",

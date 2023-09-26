@@ -295,10 +295,10 @@ static bool trace_uprobe_match_command_head(struct trace_uprobe *tu,
 		return false;
 
 	if (tu->ref_ctr_offset == 0)
-		snprintf(buf, sizeof(buf), "0x%0*lx",
+		scnprintf(buf, sizeof(buf), "0x%0*lx",
 				(int)(sizeof(void *) * 2), tu->offset);
 	else
-		snprintf(buf, sizeof(buf), "0x%0*lx(0x%lx)",
+		scnprintf(buf, sizeof(buf), "0x%0*lx(0x%lx)",
 				(int)(sizeof(void *) * 2), tu->offset,
 				tu->ref_ctr_offset);
 	if (strcmp(buf, &argv[0][len + 1]))
@@ -649,7 +649,7 @@ static int trace_uprobe_create(int argc, const char **argv)
 		if (ptr)
 			*ptr = '\0';
 
-		snprintf(buf, MAX_EVENT_NAME_LEN, "%c_%s_0x%lx", 'p', tail, offset);
+		scnprintf(buf, sizeof(buf), "%c_%s_0x%lx", 'p', tail, offset);
 		event = buf;
 		kfree(tail);
 	}

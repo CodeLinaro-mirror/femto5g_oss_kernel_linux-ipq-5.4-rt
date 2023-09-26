@@ -526,7 +526,7 @@ static ssize_t channel_vp_mapping_show(struct device *dev,
 	if (!channel)
 		return -ENODEV;
 
-	tot_written = snprintf(buf, buf_size, "%u:%u\n",
+	tot_written = scnprintf(buf, buf_size, "%u:%u\n",
 		channel->offermsg.child_relid, channel->target_cpu);
 
 	spin_lock_irqsave(&channel->lock, flags);
@@ -609,7 +609,7 @@ static ssize_t driver_override_show(struct device *dev,
 	ssize_t len;
 
 	device_lock(dev);
-	len = snprintf(buf, PAGE_SIZE, "%s\n", hv_dev->driver_override);
+	len = scnprintf(buf, PAGE_SIZE, "%s\n", hv_dev->driver_override);
 	device_unlock(dev);
 
 	return len;

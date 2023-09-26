@@ -2650,7 +2650,7 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
 	uap->port.irq = dev->irq[0];
 	uap->port.ops = &amba_pl011_pops;
 
-	snprintf(uap->type, sizeof(uap->type), "PL011 rev%u", amba_rev(dev));
+	scnprintf(uap->type, sizeof(uap->type), "PL011 rev%u", amba_rev(dev));
 
 	ret = pl011_setup_port(&dev->dev, uap, &dev->res, portnr);
 	if (ret)
@@ -2743,7 +2743,7 @@ static int sbsa_uart_probe(struct platform_device *pdev)
 	uap->port.ops	= &sbsa_uart_pops;
 	uap->fixed_baud = baudrate;
 
-	snprintf(uap->type, sizeof(uap->type), "SBSA");
+	scnprintf(uap->type, sizeof(uap->type), "SBSA");
 
 	r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 

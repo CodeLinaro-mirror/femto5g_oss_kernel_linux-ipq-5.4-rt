@@ -537,7 +537,7 @@ static ssize_t msg_print_ext_header(char *buf, size_t size,
 #ifdef CONFIG_PRINTK_CALLER
 	u32 id = msg->caller_id;
 
-	snprintf(caller, sizeof(caller), ",caller=%c%u",
+	scnprintf(caller, sizeof(caller), ",caller=%c%u",
 		 id & 0x80000000 ? 'C' : 'T', id & ~0x80000000);
 #else
 	caller[0] = '\0';
@@ -1162,7 +1162,7 @@ module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
 
 static size_t print_cpu(u16 cpu, char *buf)
 {
-	return scnprintf(buf, 32, "%03hu: ", cpu);
+	return scnprintf(buf, 16, "%03hu: ", cpu);
 }
 
 static size_t print_syslog(unsigned int level, char *buf)
@@ -1183,7 +1183,7 @@ static size_t print_caller(u32 id, char *buf)
 {
 	char caller[12];
 
-	snprintf(caller, sizeof(caller), "%c%u",
+	scnprintf(caller, sizeof(caller), "%c%u",
 		 id & 0x80000000 ? 'C' : 'T', id & ~0x80000000);
 	return sprintf(buf, "[%6s]", caller);
 }
