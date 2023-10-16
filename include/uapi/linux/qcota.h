@@ -34,6 +34,8 @@ enum qce_ota_algo_enum {
 
 /**
  * struct qce_f8_req - qce f8 request
+ * @conn_id:	connection ID obtained from previous QCOTA_OPEN_EEA ioctl.
+ *		algorithm of Zuc, or Snow3G is implied from conn_id;
  * @data_in:	packets input data stream to be ciphered.
  * @data_out:	ciphered packets output data.
  * @data_len:	length of data_in and data_out in bytes.
@@ -44,10 +46,10 @@ enum qce_ota_algo_enum {
  * @ckey:	128 bits of confidentiality key,
  *		ckey[0] bit 127-120, ckey[1] bit 119-112,.., ckey[15] bit 7-0.
  * @direction:	uplink or donwlink.
- * @algorithm:	Zuc, or Snow3G.
  *
  */
 struct qce_f8_req {
+	void  *conn_id;
 	__u8  *data_in;
 	__u8  *data_out;
 	__u16  data_len;
@@ -56,11 +58,12 @@ struct qce_f8_req {
 	__u8   bearer;
 	__u8   ckey[OTA_KEY_SIZE];
 	enum qce_ota_dir_enum  direction;
-	enum qce_ota_algo_enum algorithm;
 };
 
 /**
  * struct qce_f9_req - qce f9 request
+ * @conn_id:	connection ID obtained from previous QCOTA_OPEN_EIA ioctl.
+ *		algorithm of Zuc, or Snow3G is implied from conn_id;
  * @message:	message
  * @msize:	message size in bytes (include the last partial byte).
  * @last_bits:	number of partial bits of the last byte of message. Range 0-7.
@@ -71,9 +74,9 @@ struct qce_f8_req {
  * @ikey:	128 bits of integrity key,
  *		ikey[0] bit 127-120, ikey[1] bit 119-112,.., ikey[15] bit 7-0.
  * @direction:	uplink or donwlink.
- * @algorithm:	Zuc, or Snow3G.
  */
 struct qce_f9_req {
+	void  *conn_id;
 	__u8   *message;
 	__u16   msize;
 	__u8    last_bits;
@@ -82,7 +85,18 @@ struct qce_f9_req {
 	__u32   fresh_bearer;
 	__u8    ikey[OTA_KEY_SIZE];
 	enum qce_ota_dir_enum direction;
-	enum qce_ota_algo_enum algorithm;
+};
+
+/*
+ * struct qce_ota_open_conn_req - qcota connection request
+ * @alg:        algorithm of the open request
+ * @conn_id:	connection ID, returned. Used in f8 or f9 requests
+ *		after obtained from QCOTA_OPEN_EEA and QCOTA_OPEN_EIA
+ *		ioctl requests, respectively.
+ */
+struct qce_ota_open_conn_req {
+	enum qce_ota_algo_enum alg;
+	void *conn_id;
 };
 
 #define QCOTA_IOC_MAGIC     'G'
@@ -91,12 +105,10 @@ struct qce_f9_req {
 
 #define QCOTA_F9_REQ _IOWR(QCOTA_IOC_MAGIC, 2, struct qce_f9_req)
 
-#define QCOTA_OPEN_EEA _IOWR(QCOTA_IOC_MAGIC, 3, enum qce_ota_algo_enum)
+#define QCOTA_OPEN_EEA _IOWR(QCOTA_IOC_MAGIC, 3, struct qce_ota_open_conn_req)
 
-#define QCOTA_OPEN_EIA _IOWR(QCOTA_IOC_MAGIC, 4, enum qce_ota_algo_enum)
+#define QCOTA_OPEN_EIA _IOWR(QCOTA_IOC_MAGIC, 4, struct qce_ota_open_conn_req)
 
-#define QCOTA_CLOSE_EEA _IOWR(QCOTA_IOC_MAGIC, 5, enum qce_ota_algo_enum)
-
-#define QCOTA_CLOSE_EIA _IOWR(QCOTA_IOC_MAGIC, 6, enum qce_ota_algo_enum)
+#define QCOTA_CLOSE_OTA_CONN _IOWR(QCOTA_IOC_MAGIC, 5, void *)
 
 #endif /* _UAPI_QCOTA_H */
