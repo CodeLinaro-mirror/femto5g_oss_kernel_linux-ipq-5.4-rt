@@ -68,10 +68,18 @@ static irqreturn_t fsm_tti_gpio_irq_handler(int irq, void *irq_data)
 		/* wake up the poll ops */
 		if (tti_intr_drv->is_poll_enabled) {
 			atomic_set(&tti_intr_drv->tti_updated, 1);
-			wake_up(&tti_intr_drv->tti_poll_waitqueue);
+			tasklet_schedule(&tti_intr_drv->task);
 		}
 	}
 	return IRQ_HANDLED;
+}
+
+void fsm_tti_notify_task(unsigned long data)
+{
+	struct fsm_tti_intr_drv *tti_intr_drv = (struct fsm_tti_intr_drv *)data;
+
+	if (tti_intr_drv)
+		wake_up(&tti_intr_drv->tti_poll_waitqueue);
 }
 
 static int __init fsm_tti_intr_probe(struct platform_device *pdev)
@@ -105,6 +113,9 @@ static int __init fsm_tti_intr_probe(struct platform_device *pdev)
 		kfree(tti_intr_drv);
 		return -ENOENT;
 	}
+
+	tasklet_init(&tti_intr_drv->task, fsm_tti_notify_task, (ulong)tti_intr_drv);
+
 	/* allocate space for device info */
 	device_data = devm_kzalloc(&pdev->dev, MAX_FSM_TTI_DEVICE *
 			sizeof(struct fsm_tti_gpio_device_data), GFP_KERNEL);
@@ -157,6 +168,9 @@ static int __init fsm_tti_intr_probe(struct platform_device *pdev)
 			flags |= ((flags & IRQF_TRIGGER_RISING) ?
 				IRQF_TRIGGER_FALLING : IRQF_TRIGGER_RISING);
 		}
+
+		flags |= IRQF_NO_THREAD;
+
 		if (i == 0)
 			snprintf(p->device_data->name,
 				FSM_TTI_MAX_NAME_LEN - 1,

@@ -21,6 +21,7 @@
 #include <linux/cdev.h>
 #include <linux/wait.h>
 #include <linux/platform_device.h>
+#include <linux/interrupt.h>
 
 #include <linux/fsm_tti_intr_if.h>
 #include <linux/fsm_logging.h>
@@ -79,6 +80,7 @@ struct fsm_tti_intr_drv {
 	atomic_t tti_updated;
 	bool is_first_tti_intr;
 	wait_queue_head_t tti_poll_waitqueue;
+	struct tasklet_struct task;
 	struct fsm_tti_gpio_device_data *device_data;
 	struct fsm_tti_mmap_info *shared_data;
 	struct fsm_tti_internal_stats debugfs_stats;

@@ -1,5 +1,7 @@
 /* Copyright (c) 2018-2019, 2021 The Linux Foundation. All rights reserved.
  *
+ * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
  * only version 2 as published by the Free Software Foundation.
@@ -429,7 +431,7 @@ int mhi_init_irq_setup(struct mhi_controller *mhi_cntrl)
 			continue;
 
 		ret = request_irq(mhi_cntrl->irq[mhi_event->msi],
-				  mhi_msi_handlr, IRQF_SHARED | IRQF_NO_SUSPEND,
+				  mhi_msi_handlr, IRQF_NO_THREAD | IRQF_NO_SUSPEND,
 				  "mhi", mhi_event);
 		if (ret) {
 			MHI_CNTRL_ERR("Error requesting irq:%d for ev:%d\n",
