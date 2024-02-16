@@ -1,5 +1,5 @@
 /* Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -89,6 +89,9 @@ static long fsm_tti_intr_cdev_ioctl(
 
 		/* update seeding complete flag */
 		tti_drv_cntx->is_seeding_done = true;
+
+		if(tti_drv_cntx->device_data->tti_irq_affinity)
+			fsm_tti_set_affinity(tti_drv_cntx);
 
 		/* Update into debugfs stats */
 		tti_drv_cntx->debugfs_stats.initial_sfn_slot.sfn_slot =

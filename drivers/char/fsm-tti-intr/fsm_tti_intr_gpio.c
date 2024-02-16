@@ -1,6 +1,6 @@
 /* Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
  *
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -80,6 +80,21 @@ void fsm_tti_notify_task(unsigned long data)
 
 	if (tti_intr_drv)
 		wake_up(&tti_intr_drv->tti_poll_waitqueue);
+}
+
+void fsm_tti_set_affinity(struct fsm_tti_intr_drv *tti_intr_drv)
+{
+	struct fsm_tti_gpio_device_data *device_data = tti_intr_drv->device_data;
+	int ret;
+
+	if(device_data == NULL)
+		return;
+
+	ret = irq_set_affinity(device_data->irq,
+		cpumask_of(device_data->tti_irq_affinity));
+	if (ret)
+		FSM_TTI_INFO("FSM-TTI: irq_set_affinity() failed, ret= %d\n",
+			ret);
 }
 
 static int __init fsm_tti_intr_probe(struct platform_device *pdev)
@@ -192,6 +207,17 @@ static int __init fsm_tti_intr_probe(struct platform_device *pdev)
 			tti_intr_drv->device_data->irq);
 			goto cleanup_shared_data;
 		}
+
+		if (of_get_property(np, "enable-gpio-affinity", NULL)) {
+			if (of_property_read_u32(np, "gpio-cpu-affinity",
+					&p->device_data->tti_irq_affinity)) {
+				p->device_data->tti_irq_affinity = FSM_TTI_GPIO_IRQ_AFFINITY_CORE;
+				dev_warn(&pdev->dev,
+					"gpio-cpu-affinity is mising, moving to default: %u\n",
+					p->device_data->tti_irq_affinity);
+			}
+		}
+
 		page = alloc_page(GFP_KERNEL);
 		if (page) {
 			p->page = page;
