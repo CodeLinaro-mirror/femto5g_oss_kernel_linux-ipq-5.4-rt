@@ -1,6 +1,6 @@
 /* Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
  *
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -30,6 +30,7 @@
 #define FSM_TTI_MODULE_NAME	"fsm-tti"
 #define FSM_TTI_DEV_CLASS_NAME	FSM_TTI_MODULE_NAME
 #define FSM_TTI_CDEV_NAME	FSM_TTI_MODULE_NAME
+#define FSM_TTI_GPIO_IRQ_AFFINITY_CORE	0
 
 /* ipc logging */
 extern void *fsm_tti_ipc_log;
@@ -67,6 +68,7 @@ struct fsm_tti_gpio_device_data {
 	bool assert_falling_edge;
 	bool capture_clear;
 	unsigned int gpio_pin;
+	unsigned int tti_irq_affinity;
 	char name[FSM_TTI_MAX_NAME_LEN];	/* symbolic name */
 };
 
@@ -91,6 +93,7 @@ int fsm_tti_cdev_init(struct fsm_tti_intr_drv *tti_intr_drv);
 void fsm_tti_cdev_cleanup(struct fsm_tti_intr_drv *tti_intr_drv);
 int fsm_tti_debugfs_init(struct fsm_tti_intr_drv *tti_intr_drv);
 void fsm_tti_debugfs_cleanup(struct fsm_tti_intr_drv *tti_intr_drv);
+void fsm_tti_set_affinity(struct fsm_tti_intr_drv *tti_intr_drv);
 
 #endif /* __FSM_TTI_INTR__ */
 
