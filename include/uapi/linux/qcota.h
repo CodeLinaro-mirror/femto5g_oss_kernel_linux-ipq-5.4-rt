@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2023-2024 Qualcomm Innovation Center, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -29,6 +29,7 @@ enum qce_ota_dir_enum {
 enum qce_ota_algo_enum {
 	QCE_OTA_ALGO_SNOW3G = 0,
 	QCE_OTA_ALGO_ZUC = 1,
+	QCE_OTA_ALGO_AES = 2,
 	QCE_OTA_ALGO_LAST
 };
 
@@ -46,7 +47,6 @@ enum qce_ota_algo_enum {
  * @ckey:	128 bits of confidentiality key,
  *		ckey[0] bit 127-120, ckey[1] bit 119-112,.., ckey[15] bit 7-0.
  * @direction:	uplink or donwlink.
- *
  */
 struct qce_f8_req {
 	void  *conn_id;
