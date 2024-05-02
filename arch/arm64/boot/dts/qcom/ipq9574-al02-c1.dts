@@ -3,7 +3,7 @@
  * IPQ9574 AL02-C1 board device tree source
  *
  * Copyright (c) 2020-2021 The Linux Foundation. All rights reserved.
- * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (c) 2022, 2024 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 /dts-v1/;
@@ -37,6 +37,7 @@
 
 	chosen {
 		stdout-path = "serial0";
+		bootargs-append = " kthread_cpus=0 irqaffinity=0 audit=0 skew_tick=1 nosoftlockup nohz=on isolcpus=1-3 rcu_nocbs=1-3 nohz_full=1-3";
 	};
 
 	soc {
