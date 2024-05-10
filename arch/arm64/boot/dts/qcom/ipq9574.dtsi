@@ -3690,7 +3690,7 @@
 		assert-falling-edge;
 		compatible = "tti-gpio";
 		enable-gpio-affinity;
-		gpio-cpu-affinity = <1>;
+		gpio-cpu-affinity = <3>;
 		status = "okay";
     };
 
