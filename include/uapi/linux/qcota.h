@@ -70,7 +70,7 @@ struct qce_res_queue_entry
 {
 	__u64 req_id;
 	__s32 req_status;
-	__u16 req_served;
+	__u32 req_served;
 	__u16 data_length;
 	__u8 data[OTA_MAX_DATA_LENGTH];
 	enum qce_ota_type_enum req_type;
